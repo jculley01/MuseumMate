@@ -4,7 +4,7 @@ const Queue = require('./Queue');
 const SignalMap = require('./signalMap');
 const QueueProcessor = require('./processQueue');
 const { trainKNN, predictKNN } = require('./knnClassifier');
-const { trainingSet, predictions } = require('./knnTrainingData');
+const { trainingSet, predictions, trainingData, predictionData } = require('./knnTrainingData');
 const getUserSignalData = require('./signalExtractor');
 const { getLocation }= require('./getLocation');
 const { InfluxDB, Point } = require('@influxdata/influxdb-client');
@@ -20,24 +20,30 @@ let bucket = `metrics`;
 let writeClient = client.getWriteApi(org, bucket, 'ns');
 
 const beaconIDs = {
-    "fc:f5:c4:06:f4:46": 1,
-    "0c:dc:7e:cc:4d:a6": 2,
-    "0c:dc:7e:cb:6a:b2": 3,
-    "24:6f:28:76:1d:8e": 4
+    "0c:dc:7e:cb:6a:b2": 1,
+    "24:6f:28:76:1d:8e": 2,
+    "0c:dc:7e:cc:4d:3a": 3,
+    "0c:dc:7e:cc:4d:a6": 4,
+    "b8:f0:09:95:93:12": 5,
+    "44:17:93:5e:f7:b2": 6,
+    "0c:dc:7e:cb:46:b6": 7,
+    "fc:f5:c4:16:a3:fe": 8,
+    "0c:dc:7e:cb:06:82": 9,
+    "fc:f5:c4:07:65:6e": 10
 };
 //---------------------------------------------------
 
 
 
 
-setInterval(() => {
-    let obj = {
-        "beaconID": Math.floor(Math.random() * 10) + 1, // Random beaconID between 1-10
-        "userID": Math.floor(Math.random() * 2) + 1,    // Random userID between 1-2
-        "signalStrength": Math.floor(Math.random() * 51) - 90 // Random signalStrength between -40 and -90
-    };
-    dataQueue.enqueue(obj);
-}, 100);
+// setInterval(() => {
+//     let obj = {
+//         "beaconID": Math.floor(Math.random() * 10) + 1, // Random beaconID between 1-10
+//         "userID": Math.floor(Math.random() * 2) + 1,    // Random userID between 1-2
+//         "signalStrength": Math.floor(Math.random() * 51) - 90 // Random signalStrength between -40 and -90
+//     };
+//     dataQueue.enqueue(obj);
+// }, 100);
 
 
 
@@ -76,6 +82,7 @@ server.on('message', (msg, rinfo) => {
         "userID": userID,
         "signalStrength": signalStrength
     }
+
     dataQueue.enqueue(messageObj);
 });
 
@@ -87,7 +94,7 @@ server.on('listening', () => {
 
 
 queueProcessor.processQueue();
-trainKNN(trainingSet, predictions);
+trainKNN(trainingData, predictionData);
 
 setInterval(() => {
     signalMap.printAllSignals();
