@@ -4,27 +4,57 @@ class SignalMap {
         this.userBeaconMap = {};
     }
 
+    initializeSignalMap(beaconIDs, userIDs) {
+        for (const userID of userIDs) {
+            const userSignals = {};
+            for (const beaconID of beaconIDs) {
+                userSignals[beaconID] = -100;
+            }
+            this.userBeaconMap[userID] = userSignals;
+        }
+    }
+
     addSignal(userID, beaconID, signalStrength) {
         if (!this.userBeaconMap[userID]) {
             this.userBeaconMap[userID] = {};
         }
-        this.userBeaconMap[userID][beaconID] = signalStrength;
+        this.userBeaconMap[userID][beaconID] = parseInt(signalStrength);
     }
 
-    updateSignal(userID, beaconID, newSignalStrength) {
-        if (this.userBeaconMap[userID] && this.userBeaconMap[userID][beaconID] !== undefined) {
-            this.userBeaconMap[userID][beaconID] = newSignalStrength;
-            console.log(`Signal updated for user ${userID} and beacon ${beaconID}`);
-        } else {
-            console.log(`No existing signal for user ${userID} and beacon ${beaconID} to update.`);
+    updateSignals(beaconDataArray) {
+        // Ensure all users have all beacons set to -100 before the update
+        for (let userID in this.userBeaconMap) {
+            for (let i = 1; i <= 10; i++) {
+                if (this.userBeaconMap[userID][i] === undefined) {
+                    this.userBeaconMap[userID][i] = -100;
+                }
+            }
+        }
+
+        // Now, update the beacon data from the array
+        for (let data of beaconDataArray) {
+            this.addSignal(data.userID, data.beaconID, data.signalStrength);
+        }
+
+        // Finally, for each user, set any beacon not in the update to -100
+        for (let userID in this.userBeaconMap) {
+            const userBeacons = this.userBeaconMap[userID];
+            const updatedBeaconIDs = beaconDataArray.map(data => data.beaconID);
+
+            for (let i = 1; i <= 10; i++) {
+                if (!updatedBeaconIDs.includes(i)) {
+                    userBeacons[i] = -100;
+                }
+            }
         }
     }
+
 
     getSignal(userID, beaconID) {
-        if (this.userBeaconMap[userID] && this.userBeaconMap[userID][beaconID] !== undefined) {
+        if (this.userBeaconMap[userID]) {
             return this.userBeaconMap[userID][beaconID];
         }
-        return null;
+        return -100;
     }
 
     getAllSignalsForUser(userID) {
@@ -32,7 +62,7 @@ class SignalMap {
         const beacons = this.userBeaconMap[userID];
         if (beacons) {
             for (const beaconID in beacons) {
-                signals.push({ beaconID, signalStrength: beacons[beaconID] });
+                signals.push({ beaconID: parseInt(beaconID), signalStrength: beacons[beaconID] });
             }
         }
         return signals;
