@@ -1,17 +1,12 @@
 const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
-const Queue = require('./Queue');
 const SignalMap = require('./signalMap');
-const QueueProcessor = require('./processQueue');
-const { trainKNN, predictKNN } = require('./knnClassifier');
+const { trainKNN } = require('./knnClassifier');
 const { trainingData, predictionData } = require('./knnTrainingData');
-const getUserSignalData = require('./signalExtractor');
 const { getLocation }= require('./getLocation');
 const { InfluxDB, Point } = require('@influxdata/influxdb-client');
 
-const dataQueue = new Queue();
 const signalMap = new SignalMap();
-const queueProcessor = new QueueProcessor(dataQueue, signalMap);
 const token = 'ZqbPr-oJgMnp1IfrSMuks9klMNepcVuWSerh2OEoMv9R5OOFw1DEZY82JsB6kPL5TYFrXbMsukYYkS0a8DAHww==';
 const url = 'http://localhost:8086';
 const client = new InfluxDB({ url, token });
@@ -73,7 +68,7 @@ server.on('message', (msg, rinfo) => {
         objArr.push(messageObj);
     }
 }
-    signalMap.updateSignals(objArr, signalMap);
+signalMap.updateSignals(objArr, signalMap);
 });
 
 //turn the server on and begin listening for incoming data
@@ -82,13 +77,18 @@ server.on('listening', () => {
     console.log(`server listening ${address.address}:${address.port}`);
 });
 
+console.log(trainingData.length);
+const intervalId = setInterval(() => {
+    if (trainingData.length === 1203) {
+        clearInterval(intervalId); // Stop checking once the condition is met
+        trainKNN(trainingData, predictionData); // Call your function
+    }
+}, 1000); // Check every 1000 milliseconds (1 second)
 
-queueProcessor.processQueue();
-trainKNN(trainingData, predictionData);
 
 setInterval(() => {
     signalMap.printAllSignals();
-    console.log(`The predicted location is: `, getLocation(signalMap, 3));
+    console.log(`The predicted location is: `, getLocation(signalMap, 1));
 }, 10000)
 
 
