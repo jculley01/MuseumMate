@@ -4,7 +4,7 @@ const Queue = require('./Queue');
 const SignalMap = require('./signalMap');
 const QueueProcessor = require('./processQueue');
 const { trainKNN, predictKNN } = require('./knnClassifier');
-const { trainingSet, predictions, trainingData, predictionData } = require('./knnTrainingData');
+const { trainingData, predictionData } = require('./knnTrainingData');
 const getUserSignalData = require('./signalExtractor');
 const { getLocation }= require('./getLocation');
 const { InfluxDB, Point } = require('@influxdata/influxdb-client');
@@ -31,22 +31,12 @@ const beaconIDs = {
     "0c:dc:7e:cb:06:82": 9,
     "fc:f5:c4:07:65:6e": 10
 };
+
+const userIDs = {
+    "30:ae:a4:1a:91:c2": 1
+};
+
 //---------------------------------------------------
-
-
-
-
-// setInterval(() => {
-//     let obj = {
-//         "beaconID": Math.floor(Math.random() * 10) + 1, // Random beaconID between 1-10
-//         "userID": Math.floor(Math.random() * 2) + 1,    // Random userID between 1-2
-//         "signalStrength": Math.floor(Math.random() * 51) - 90 // Random signalStrength between -40 and -90
-//     };
-//     dataQueue.enqueue(obj);
-// }, 100);
-
-
-
 
 //turn the server on and report any errors that occur
 server.on('error', (err) => {
@@ -60,30 +50,30 @@ server.on('message', (msg, rinfo) => {
     //process the data
     let message = msg.toString();
     let variables = message.split(',');
+    let objArr = [];
+    console.log(variables.length);
+    if(variables.length % 3 == 0){
+    for(let i = 0; i < variables.length; i+=3){
+        let beaconMac = variables[i].trim();
+        let beaconID = beaconIDs[beaconMac];
+        let userMac = variables[i+1].trim();
+        let userID = userIDs[userMac];
+        let signalStrength = variables[i+2].trim();
+        let point = new Point('beaconStrength')
+            .tag('beaconID', beaconID)
+            .tag('userID', userID)
+            .floatField('signalStrength', signalStrength);
 
-    // Assuming the message format is "beaconID,userID,signalStrength"
-    let beaconMac = variables[0].trim();
-    let beaconID = beaconIDs[beaconMac];
-    let userID = variables[1].trim();
-    let signalStrength = variables[2].trim();
-    console.log("beaconID:",beaconID);
-    console.log("userID: ",userID);
-    console.log("signalStrength: ",signalStrength);
-    //send the data to InfluxDB
-    let point = new Point('beaconStrength')
-        .tag('beaconID', beaconID)
-        .tag('userID', userID)
-        .floatField('signalStrength', signalStrength);
-
-    writeClient.writePoint(point);
-    // Store the message in the data queue
-    let messageObj = {
-        "beaconID": beaconID,
-        "userID": userID,
-        "signalStrength": signalStrength
+        writeClient.writePoint(point);
+        let messageObj = {
+            "beaconID": beaconID,
+            "userID": userID,
+            "signalStrength": signalStrength
+        }
+        objArr.push(messageObj);
     }
-
-    dataQueue.enqueue(messageObj);
+}
+    signalMap.updateSignals(objArr, signalMap);
 });
 
 //turn the server on and begin listening for incoming data
@@ -98,7 +88,7 @@ trainKNN(trainingData, predictionData);
 
 setInterval(() => {
     signalMap.printAllSignals();
-    console.log(`The predicted location is: `, getLocation(signalMap, 1));
+    console.log(`The predicted location is: `, getLocation(signalMap, 3));
 }, 10000)
 
 
