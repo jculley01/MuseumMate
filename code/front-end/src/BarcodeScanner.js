@@ -21,10 +21,13 @@ export default function BarcodeScanner() {
   };
 
   const handleConfirm = () => {
-    // Placeholder for the confirm button functionality
-    // You can add logic here to handle the confirmed data
-    alert('Confirmed!');
+    if (scannedData && scannedData.data) {
+      navigation.navigate('TourType', { scannedValue: scannedData.data });
+    } else {
+      alert('No scanned data to confirm');
+    }
   };
+  
 
   if (hasPermission === 'null') {
     return <Text> Requesting Camera Permission</Text>;
@@ -53,7 +56,7 @@ export default function BarcodeScanner() {
         </View>
       )}
       
-      <TouchableOpacity style={styles.confirmButton} onPress={()=>navigation.navigate('TourType')}>
+      <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
           <Text style={styles.confirmButtonText}>Confirm</Text> 
       </TouchableOpacity>
     </View>
