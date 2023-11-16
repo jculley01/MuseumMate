@@ -2,11 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const handleTimed = () => {
-    // Placeholder for the confirm button functionality
-    // You can add logic here to handle the confirmed data
-    alert('TIMED TOUR!');
-  };
+
 
   const handleEx = () => {
     // Placeholder for the confirm button functionality
@@ -16,8 +12,19 @@ const handleTimed = () => {
 
 
 
-const TourType = () => {
-  const navigation = useNavigation();
+const TourType = ({ navigation, route }) => {
+  //const navigation = useNavigation();
+  const { scannedValue } = route.params;
+  
+  
+  const handleTimed = () => {
+    if (scannedValue) {
+      navigation.navigate('PreMade', { scannedValue });
+    } else {
+      alert('No scanned barcode data available');
+    }
+    };
+
 
   return (
     <View style={styles.container}>
@@ -28,7 +35,7 @@ const TourType = () => {
       <Text style={styles.subTitle}>
         Select a Tour Type
       </Text>
-      <TouchableOpacity style={styles.button} onPress={()=>navigation.navigate('PreMade')}>
+      <TouchableOpacity style={styles.button} onPress={handleTimed}>
         <Text style={styles.buttonText}>Timed Tour</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={handleEx}>

@@ -2,7 +2,18 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity,Image } from 'react-native';
 
-const PreMade = ({ navigation }) => {
+
+
+const PreMade = ({ navigation, route }) => {
+  const { scannedValue } = route.params;
+
+  const handleCurrent = () => {
+    if (scannedValue) {
+      navigation.navigate('CurrentLoc', { scannedValue });
+    } else {
+      alert('No scanned data to confirm');
+    }
+  };
   return (
     <View style={styles.container}>
       <Image
@@ -19,8 +30,8 @@ const PreMade = ({ navigation }) => {
       <TouchableOpacity style={styles.tourButton}>
         <Text style={styles.buttonText}>Empires In Harmony (3hr)</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.tourButton}>
-        <Text style={styles.buttonText}>Custom</Text>
+      <TouchableOpacity style={styles.tourButton} onPress={handleCurrent}>
+        <Text style={styles.buttonText}>Current Location</Text>
       </TouchableOpacity>
     </View>
   );
