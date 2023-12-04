@@ -1,13 +1,18 @@
 const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
+const rfidServer = dgram.createSocket('udp4');
 const express = require('express');
 const djikstra = require('./dijkstra');
 const tsp = require('./tsp');
 const SignalMap = require('./signalMap');
+const getObjects = require('./retrieveMedia');
 const { trainKNN } = require('./knnClassifier');
 const { trainingData, predictionData } = require('./knnTrainingData');
 const { getLocation }= require('./getLocation');
 const { InfluxDB, Point } = require('@influxdata/influxdb-client');
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: 8080 });
+const Minio = require('minio');
 
 const signalMap = new SignalMap();
 const token = 'ZqbPr-oJgMnp1IfrSMuks9klMNepcVuWSerh2OEoMv9R5OOFw1DEZY82JsB6kPL5TYFrXbMsukYYkS0a8DAHww==';
@@ -17,6 +22,14 @@ const app = express();
 let org = `API-Observability`;
 let bucket = `metrics`;
 let writeClient = client.getWriteApi(org, bucket, 'ns');
+var minioClient = new Minio.Client({
+    endPoint: 'localhost',
+    port: 9000,
+    useSSL: false,
+    accessKey: 'Fzmxk29NK7mhfEsEQ7l5',
+    secretKey: 'lTpuETaLkJawA0FziIeDeGxZnvrKKalDnO5fu9iT',
+})
+const bucketName = 'multimedia';
 
 const beaconIDs = {
     "0c:dc:7e:cb:6a:b2": 1,
@@ -94,6 +107,34 @@ server.on('listening', () => {
     console.log(`server listening ${address.address}:${address.port}`);
 });
 
+wss.on('connection', ws => {
+    console.log('WebSocket client connected');
+
+    // Function to send data to WebSocket client
+    const sendToClient = (data) => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify(data));
+        }
+    };
+
+    rfidServer.on('message', (msg) => {
+        console.log(`RFID server got: ${msg}`);
+        let [userID, RFID] = msg.toString().split(',');
+        let data = { userID: userID.trim(), RFID: RFID.trim() };
+        sendToClient(data);
+    });
+
+    ws.on('close', () => {
+        console.log('WebSocket client disconnected');
+    });
+});
+
+rfidServer.on('listening', () => {
+    const address = rfidServer.address();
+    console.log(`RFID server listening ${address.address}:${address.port}`);
+});
+
+
 console.log(trainingData.length);
 const intervalId = setInterval(() => {
     if (trainingData.length === 1203) {
@@ -158,14 +199,33 @@ app.post('/tsp-path', (req, res) => {
     if (!startNode) {
         return res.status(404).send('Start location not found for given userID');
     }
-
+    
     try {
-        const path = tsp.tsp(graph, startNode, nodes); // Call your TSP function to calculate the shortest path
-        res.status(200).json({ userID: userID, path: path });
+        const { shortestDistance, shortestPath } = tsp.findShortestRoute(graph, startNode, nodes); // Destructuring to get shortestPath and minWeight
+        res.status(200).json({ userID: userID, path: shortestPath, shortestDistance: shortestDistance });
     } catch (error) {
         res.status(500).send('Error calculating path: ' + error.message);
     }
 });
+
+app.get('/rfid', async (req, res) => {
+    try {
+        const objects = await getObjects.listAllObjects(bucketName, minioClient);
+        // Construct object data, including URLs
+        const objectData = objects.map(obj => {
+            return {
+                name: obj.name,
+                url: `http://localhost:9000/${bucketName}/${obj.name}` // Adjust URL pattern as needed
+            };
+        });
+        res.json(objectData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error retrieving objects');
+    }
+});
+
+
 
 
 const port = parseInt(process.env.PORT) || 3000;
@@ -175,4 +235,5 @@ app.listen(port, () => {
 
 const PORT = 3333;
 server.bind(PORT);
+rfidServer.bind(3334);
 

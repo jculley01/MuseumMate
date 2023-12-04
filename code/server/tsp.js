@@ -1,53 +1,98 @@
-function calculatePathWeight(path) {
-    let weight = 0;
-    console.log(path.length);
-    for (let i = 0; i < path.length - 1; i++) {
-        weight += graph[path[i]][path[i + 1]];
-    }
-    return weight;
-}
+function getPermutations(array) {
+    if (array.length === 0) return [[]];
 
-function permute(permutation) {
-    let length = permutation.length,
-        result = [permutation.slice()],
-        c = new Array(length).fill(0),
-        i = 1, k, p;
+    const firstElement = array[0];
+    const rest = array.slice(1);
 
-    console.log(length);
-    while (i < length) {
-        if (c[i] < i) {
-            k = i % 2 && c[i];
-            p = permutation[i];
-            permutation[i] = permutation[k];
-            permutation[k] = p;
-            ++c[i];
-            i = 1;
-            result.push(permutation.slice());
-        } else {
-            c[i] = 0;
-            ++i;
-        }
-    }
-    return result;
-}
+    const permsWithoutFirst = getPermutations(rest);
+    const allPermutations = [];
 
-function tsp(graph, start, nodesToVisit) {
-    let shortestPath = null;
-    let minPathWeight = Number.MAX_SAFE_INTEGER;
-    let paths = permute(nodesToVisit);
-
-    paths.forEach(path => {
-        let currentPath = [start, ...path, start];
-        let currentWeight = calculatePathWeight(currentPath);
-        if (currentWeight < minPathWeight) {
-            minPathWeight = currentWeight;
-            shortestPath = currentPath;
+    permsWithoutFirst.forEach(perm => {
+        for (let i = 0; i <= perm.length; i++) {
+            const permWithFirst = [...perm.slice(0, i), firstElement, ...perm.slice(i)];
+            allPermutations.push(permWithFirst);
         }
     });
 
-    return { shortestPath, minPathWeight };
+    return allPermutations;
 }
 
+function dijkstra(graph, start, end) {
+    const distances = {};
+    const parents = {};
+    const visited = new Set();
+    Object.keys(graph).forEach(node => distances[node] = Infinity);
+    distances[start] = 0;
+
+    let currentNode = start;
+    while (currentNode) {
+        visited.add(currentNode);
+        const neighbors = graph[currentNode];
+        for (const neighbor in neighbors) {
+            if (!visited.has(neighbor)) {
+                const newDistance = distances[currentNode] + neighbors[neighbor];
+                if (newDistance < distances[neighbor]) {
+                    distances[neighbor] = newDistance;
+                    parents[neighbor] = currentNode;
+                }
+            }
+        }
+
+        currentNode = null;
+        let smallestDistance = Infinity;
+        for (const node in distances) {
+            if (!visited.has(node) && distances[node] < smallestDistance) {
+                smallestDistance = distances[node];
+                currentNode = node;
+            }
+        }
+    }
+
+    // Reconstruct path
+    const path = [];
+    let current = end;
+    while (current !== start) {
+        path.unshift(current);
+        current = parents[current];
+    }
+    path.unshift(start);
+
+    return { distance: distances[end], path };
+}
+
+function calculatePathForPermutation(graph, start, permutation) {
+    let totalDistance = 0;
+    let current = start;
+    let fullPath = [];
+
+    for (const node of permutation) {
+        const result = dijkstra(graph, current, node);
+        if (result.distance === Infinity) return { distance: Infinity, path: [] };
+        totalDistance += result.distance;
+        fullPath = fullPath.concat(result.path.slice(1));
+        current = node;
+    }
+
+    return { distance: totalDistance, path: [start, ...fullPath] };
+}
+
+function findShortestRoute(graph, start, nodesToVisit) {
+    const permutations = getPermutations(nodesToVisit);
+    let shortestDistance = Infinity;
+    let shortestPath = [];
+
+    permutations.forEach(permutation => {
+        const { distance, path } = calculatePathForPermutation(graph, start, permutation);
+        if (distance < shortestDistance) {
+            shortestDistance = distance;
+            shortestPath = path;
+        }
+    });
+
+    return { shortestDistance, shortestPath };
+}
+
+
 module.exports = {
-    tsp,
+    findShortestRoute,
 }
