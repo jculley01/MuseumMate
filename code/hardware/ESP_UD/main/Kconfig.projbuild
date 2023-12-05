@@ -1,0 +1,47 @@
+menu "Project Configuration"
+
+config WIFI_SSID
+        string "WiFi SSID"
+        default "eduroam"
+        help
+            Enter the SSID of the WiFi network you want to connect to.
+
+config EAP_ID
+        string "EAP ID"
+        default "mcliaqs@bu.edu"
+        help
+            Enter the EAP ID of the WiFi network you want to connect to.
+
+config EAP_USERNAME
+        string "EAP Username"
+        default "mcliaqs@bu.edu"
+        help
+            Enter the EAP username of the WiFi network you want to connect to.
+
+config EAP_PASSWORD
+        string "EAP Password"
+        default "AirQualityIsGood!"
+        help
+            Enter the EAP password of the WiFi network you want to connect to.
+
+config UDP_SEND_IP
+        string "UDP Send IP Address"
+        default "192.168.1.1"
+        help
+            Enter the IP address to which the UDP packets will be sent.
+
+config UDP_SEND_PORT
+        int "UDP Send Port"
+        default 3333
+        range 0 65535
+        help
+            Enter the port number to which the UDP packets will be sent.
+
+config UDP_LISTEN_PORT
+        int "UDP Listen Port"
+        default 3333
+        range 0 65535
+        help
+            Enter the port number on which the ESP32 will listen for incoming UDP packets.
+            
+endmenu
