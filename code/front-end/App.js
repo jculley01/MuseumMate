@@ -6,6 +6,7 @@ import TourType from './src/TourType';
 import PreMade from './src/PreMade';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import CurrectLoc from './src/CurrentLoc';
 
 const Stack = createStackNavigator();
 
@@ -68,7 +69,22 @@ function App() {
           },
         }}
       />
+      <Stack.Screen
+        name="CurrentLoc"
+        component={CurrectLoc}
+        options={{
+          title: 'CurrentLoc',
+          headerStyle: {
+            backgroundColor: '#7574DA',
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
     </Stack.Navigator>
+    
   );
 }
 

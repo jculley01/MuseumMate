@@ -2,7 +2,7 @@ const KNN = require('ml-knn');
 
 let knn;
 
-function trainKNN(trainingSet, predictions, k = 3) {
+function trainKNN(trainingSet, predictions, k = 10) {
     knn = new KNN(trainingSet, predictions, { k });
 }
 
