@@ -225,7 +225,8 @@ app.post('/tsp-path', (req, res) => {
 // run this command in the directory with the minio executable to start the server: .\minio.exe server C:\minio --console-address :9090
 app.get('/rfid/:bucketName', async (req, res) => {
     try {
-        const bucketName = req.params.bucketName; // Get bucketName from URL parameter
+        let bucketName = req.params.bucketName; // Get bucketName from URL parameter
+        bucketName = bucketName.trim();
         const objects = await getObjects.listAllObjects(bucketName, minioClient);
         // Get the IPv4 address
         const networkInterfaces = os.networkInterfaces();
