@@ -1,5 +1,6 @@
 const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
+const os = require('os');
 const rfidServer = dgram.createSocket('udp4');
 const express = require('express');
 const djikstra = require('./dijkstra');
@@ -29,7 +30,6 @@ var minioClient = new Minio.Client({
     accessKey: 'Fzmxk29NK7mhfEsEQ7l5',
     secretKey: 'lTpuETaLkJawA0FziIeDeGxZnvrKKalDnO5fu9iT',
 })
-const bucketName = 'multimedia';
 
 const beaconIDs = {
     "0c:dc:7e:cb:6a:b2": 1,
@@ -44,6 +44,18 @@ const beaconIDs = {
     "fc:f5:c4:07:65:6e": 10
 };
 
+const RFIDs = {
+    "360684124195": "1",
+    "1060675152451": "2",
+    "919031897443": "3",
+    "1065112304211": "4",
+    "184628849091": "5",
+    "1026457053987": "6"
+};
+
+
+
+
 const graph = {
     '1.1': { '1.2': 5 },
     '1.2': { '1.1': 5, '2.1': 5 },
@@ -56,7 +68,8 @@ const graph = {
 const userIDs = {
     "30:ae:a4:1a:91:c2": 1,
     "30:ae:a4:28:c2:16": 2,
-    "0c:dc:7e:cb:17:1a": 3
+    "0c:dc:7e:cb:17:1a": 3,
+    "fc:f5:c4:06:f4:46": 4
 };
 
 app.use(express.json());
@@ -71,7 +84,6 @@ server.on('error', (err) => {
 
 //turn the server on and handle all of the incoming UDP messages -> {beaconID, userID, signalStrength} which is coming from the userDevice (esp32)
 server.on('message', (msg, rinfo) => {
-    console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
     //process the data
     let message = msg.toString();
     let variables = message.split(',');
@@ -120,9 +132,10 @@ wss.on('connection', ws => {
     rfidServer.on('message', (msg) => {
         console.log(`RFID server got: ${msg}`);
         let [userID, RFID] = msg.toString().split(',');
-        let data = { userID: userID.trim(), RFID: RFID.trim() };
+        let data = { userID: userID.trim(), RFID: RFID};
         sendToClient(data);
     });
+
 
     ws.on('close', () => {
         console.log('WebSocket client disconnected');
@@ -146,7 +159,7 @@ const intervalId = setInterval(() => {
 
 setInterval(() => {
     signalMap.printAllSignals();
-    console.log(`The predicted location is: `, getLocation(signalMap, 1));
+    console.log(`The predicted location is: `, getLocation(signalMap, 4));
 }, 10000)
 
 
@@ -208,16 +221,37 @@ app.post('/tsp-path', (req, res) => {
     }
 });
 
-app.get('/rfid', async (req, res) => {
+
+// run this command in the directory with the minio executable to start the server: .\minio.exe server C:\minio --console-address :9090
+app.get('/rfid/:bucketName', async (req, res) => {
     try {
+        const bucketName = req.params.bucketName; // Get bucketName from URL parameter
         const objects = await getObjects.listAllObjects(bucketName, minioClient);
-        // Construct object data, including URLs
+        // Get the IPv4 address
+        const networkInterfaces = os.networkInterfaces();
+        let ipv4Address = null;
+
+        for (const key in networkInterfaces) {
+            const interface = networkInterfaces[key];
+            for (const entry of interface) {
+                if (entry.family === 'IPv4' && !entry.internal) {
+                    ipv4Address = entry.address;
+                    break;
+                }
+            }
+            if (ipv4Address) {
+                break;
+            }
+        }
+
+        // Construct object data with the IPv4 address in the URL
         const objectData = objects.map(obj => {
             return {
                 name: obj.name,
-                url: `http://localhost:9000/${bucketName}/${obj.name}` // Adjust URL pattern as needed
+                url: `http://${ipv4Address}:9000/${bucketName}/${obj.name}`
             };
         });
+
         res.json(objectData);
     } catch (error) {
         console.error(error);
