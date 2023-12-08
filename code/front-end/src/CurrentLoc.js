@@ -10,14 +10,14 @@ const images = {
   '3.2': require('./img/map3-2.png'),
 };
 
-function CurrentLoc({ route }) {
+function CurrentLoc({navigation, route }) {
   const { scannedValue } = route.params;
   const [imageNumber, setImageNumber] = useState(null);
   const [selectedRooms, setSelectedRooms] = useState({});
 
   const fetchData = async () => {
     try {
-      const response = await fetch(`http://10.192.43.251:3000/location/${scannedValue}`);
+      const response = await fetch(`http://10.239.5.44:3000/location/${scannedValue}`);
       const data = await response.json();
       console.log(data);
       setImageNumber(data.location); // Assuming the response is the image number
@@ -43,20 +43,28 @@ function CurrentLoc({ route }) {
 
   const sendSelectedRooms = async () => {
     try {
-      const selectedRoomsArray = Object.keys(selectedRooms).filter(room => selectedRooms[room]);
-      console.log(selectedRoomsArray)
-      const response = await fetch('http://10.239.22.23:3000/sendRooms', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ rooms: selectedRoomsArray }),
-      });
-      // Handle the response here
+        const selectedRoomsArray = Object.keys(selectedRooms).filter(room => selectedRooms[room]);
+        const userID = scannedValue; // Assuming scannedValue is the userID. Replace as needed.
+        console.log('Sending rooms:', selectedRoomsArray);
+
+        const response = await fetch('http://10.239.5.44:3000/tsp-path', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userID, nodes: selectedRoomsArray }),
+        });
+
+        // Handle the response here
+        const responseData = await response.json();
+        console.log('Server response:', responseData);
+        navigation.navigate('RFIDScreen', { pathData: responseData.path })
     } catch (error) {
-      console.error('Error sending data:', error);
+        console.error('Error sending data:', error);
     }
-  };
+    
+};
+
 
   return (
     <View style={styles.container}>

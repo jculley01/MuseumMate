@@ -7,6 +7,7 @@ import PreMade from './src/PreMade';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import CurrectLoc from './src/CurrentLoc';
+import RFIDScreen from './src/RFIDScreen'
 
 const Stack = createStackNavigator();
 
@@ -74,6 +75,20 @@ function App() {
         component={CurrectLoc}
         options={{
           title: 'CurrentLoc',
+          headerStyle: {
+            backgroundColor: '#7574DA',
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+        <Stack.Screen
+        name="RFIDScreen"
+        component={RFIDScreen}
+        options={{
+          title: 'RFIDScreen',
           headerStyle: {
             backgroundColor: '#7574DA',
           },
