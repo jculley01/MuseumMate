@@ -8,6 +8,29 @@ const RFIDScreen = ({ route }) => {
     const [hasPermission, setHasPermission] = useState(null);
     const [currentLocation, setCurrentLocation] = useState(null);
     const [path, setPath] = useState(null);
+    const [ratings, setRatings] = useState({}); // This will hold the ratings for each RFID item
+
+    const setRating = (RFID, rating) => {
+        setRatings(currentRatings => ({ ...currentRatings, [RFID]: rating }));
+    };
+
+    // Rating component
+const Rating = ({ RFID, currentRating, onRating }) => {
+    return (
+        <View style={styles.ratingContainer}>
+            {[1, 2, 3, 4, 5].map(index => (
+                <TouchableOpacity
+                    key={index}
+                    style={[
+                        styles.ratingCircle,
+                        { backgroundColor: currentRating >= index ? 'gold' : 'gray' }
+                    ]}
+                    onPress={() => onRating(RFID, index)}
+                />
+            ))}
+        </View>
+    );
+};
 
     useEffect(() => {
         (async () => {
@@ -65,7 +88,7 @@ const RFIDScreen = ({ route }) => {
     const fetchObjectData = async (RFID) => {
         try {
             RFID=RFID.trim()
-            const response = await fetch(`http://10.239.5.44:3000/rfid/${RFID}`);
+            const response = await fetch(`http://10.192.18.75:3000/rfid/${RFID}`);
     
             // Check if the response is ok (status in the range 200-299)
             if (!response.ok) {
@@ -98,15 +121,21 @@ const RFIDScreen = ({ route }) => {
                     <Text style={styles.nextStepText}>Next Step: {getNextStep()}</Text>
                 </View>
 
-                {/* Overlay content */}
-                {objectData.map((item, index) => (
-                    <View key={index} style={styles.mediaContainer}>
-                        <TouchableOpacity style={styles.closeButton} onPress={() => removeImage(item.name)}>
-                            <Text style={styles.closeButtonText}>X</Text>
-                        </TouchableOpacity>
-                        <Image source={{ uri: item.url }} style={styles.media} />
-                    </View>
-                ))}
+               {/* Overlay content */}
+                    {objectData.map((item, index) => (
+                        <View key={index} style={styles.mediaContainer}>
+                            <TouchableOpacity style={styles.closeButton} onPress={() => removeImage(item.name)}>
+                                <Text style={styles.closeButtonText}>X</Text>
+                            </TouchableOpacity>
+                            <Image source={{ uri: item.url }} style={styles.media} />
+                            {/* Rating Component */}
+                            <Rating
+                                RFID={item.RFID} // Ensure you have RFID in your item data
+                                currentRating={ratings[item.RFID] || 0}
+                                onRating={setRating}
+                            />
+                        </View>
+                    ))}
             </Camera>
         </View>
     );
@@ -184,6 +213,16 @@ const styles = StyleSheet.create({
     pathText: {
         fontSize: 16,
         color: 'black',
+    },
+    ratingContainer: {
+        flexDirection: 'row',
+        marginTop: 5,
+    },
+    ratingCircle: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        marginHorizontal: 5,
     },
 });
 
