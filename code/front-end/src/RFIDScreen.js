@@ -118,7 +118,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
         const params = {
             q: text,
             target: targetLanguage,
-            key: 'AIzaSyCxPxqJJ4q1Fm-IzlPPp_Fd94Sspu_ikXk' // Your API key
+            key: '' // Your API key
         };
     
         try {
