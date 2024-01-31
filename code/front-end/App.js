@@ -8,6 +8,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import CurrectLoc from './src/CurrentLoc';
 import RFIDScreen from './src/RFIDScreen'
+import { LogBox } from 'react-native';
+
+LogBox.ignoreLogs(['Sending `Exponent.speakingWillSayNextString` with no listeners registered.', 'Sending `Exponent.speakingDone` with no listeners registered.']);
+
 
 const Stack = createStackNavigator();
 
