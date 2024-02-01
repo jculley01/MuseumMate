@@ -44,6 +44,21 @@ const beaconIDs = {
     "fc:f5:c4:07:65:6e": 10
 };
 
+const uwbIDs = {
+
+}
+
+const uwbDevices = {
+    "uwb1": { x: 0, y: 0 },
+    "uwb2": { x: 10, y: 5 },
+    "uwb3": { x: 5, y: 7 },
+};
+
+const rooms = {
+    "room1": { x1: 0, y1: 0, x2: 5, y2: 5 },
+    "room2": { x1: 6, y1: 0, x2: 10, y2: 5 },
+};
+
 const RFIDs = {
     "360684124195": "1",
     "1060675152451": "2",
@@ -83,34 +98,64 @@ server.on('error', (err) => {
 });
 
 //turn the server on and handle all of the incoming UDP messages -> {beaconID, userID, signalStrength} which is coming from the userDevice (esp32)
+// server.on('message', (msg, rinfo) => {
+//     //process the data
+//     let message = msg.toString();
+//     let variables = message.split(',');
+//     let objArr = [];
+//     console.log(variables.length);
+//     if(variables.length % 3 == 0){
+//     for(let i = 0; i < variables.length; i+=3){
+//         let beaconMac = variables[i].trim();
+//         let beaconID = beaconIDs[beaconMac];
+//         let userMac = variables[i+1].trim();
+//         let userID = userIDs[userMac];
+//         let signalStrength = variables[i+2].trim();
+//         let point = new Point('beaconStrength')
+//             .tag('beaconID', beaconID)
+//             .tag('userID', userID)
+//             .floatField('signalStrength', signalStrength);
+
+//         writeClient.writePoint(point);
+//         let messageObj = {
+//             "beaconID": beaconID,
+//             "userID": userID,
+//             "signalStrength": signalStrength
+//         }
+//         objArr.push(messageObj);
+//     }
+// }
+// signalMap.updateSignals(objArr, signalMap);
+// });
+
 server.on('message', (msg, rinfo) => {
     //process the data
     let message = msg.toString();
     let variables = message.split(',');
     let objArr = [];
     console.log(variables.length);
-    if(variables.length % 3 == 0){
-    for(let i = 0; i < variables.length; i+=3){
-        let beaconMac = variables[i].trim();
-        let beaconID = beaconIDs[beaconMac];
-        let userMac = variables[i+1].trim();
-        let userID = userIDs[userMac];
-        let signalStrength = variables[i+2].trim();
-        let point = new Point('beaconStrength')
-            .tag('beaconID', beaconID)
-            .tag('userID', userID)
-            .floatField('signalStrength', signalStrength);
+    if (variables.length % 3 == 0) {
+        for (let i = 0; i < variables.length; i += 3) {
+            let uwbMac = variables[i].trim();
+            let uwbID = beaconIDs[uwbMac];
+            let userMac = variables[i + 1].trim();
+            let userID = userIDs[userMac];
+            let distance = variables[i + 2].trim();
+            let point = new Point('uwbDistance')
+                .tag('uwbID', uwbID)
+                .tag('userID', userID)
+                .floatField('distance', distance);
 
-        writeClient.writePoint(point);
-        let messageObj = {
-            "beaconID": beaconID,
-            "userID": userID,
-            "signalStrength": signalStrength
+            writeClient.writePoint(point);
+            let messageObj = {
+                "uwbID": uwbID,
+                "userID": userID,
+                "distance": distance
+            }
+            objArr.push(messageObj);
         }
-        objArr.push(messageObj);
     }
-}
-signalMap.updateSignals(objArr, signalMap);
+    signalMap.updateSignals(objArr, signalMap);
 });
 
 //turn the server on and begin listening for incoming data
