@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity,Modal } from 'react-native';
+import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity,Modal,ActivityIndicator } from 'react-native';
 import { Camera } from 'expo-camera';
 import { Picker } from '@react-native-picker/picker';
 import * as Speech from 'expo-speech'; // Import expo-speech
@@ -7,6 +7,7 @@ import axios from 'axios';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AntDesign } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
 
 
 
@@ -14,6 +15,7 @@ const RFIDScreen = ({ route }) => {
     const [rfidData, setRFIDData] = useState(null);
     const [selectedLanguage, setSelectedLanguage] = useState('en');
     const [translatedText, setTranslatedText] = useState('');
+    const [isLoadingApiResponse, setIsLoadingApiResponse] = useState(false);
 
 
     const [objectData, setObjectData] = useState([
@@ -21,25 +23,31 @@ const RFIDScreen = ({ route }) => {
         { name: 'Object 1', url: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Mona_Lisa.jpg', description:`The Mona Lisa is a world-renowned portrait painted by Leonardo da Vinci during the Renaissance. Measuring 77 cm by 53 cm, it depicts a woman,
         commonly believed to be Lisa Gherardini, with a serene and enigmatic expression. Her gaze directly meets the viewer's, creating an intimate interaction. The painting is celebrated for its exquisite detail, the subtle modeling of forms, 
         and the atmospheric illusionism. Da Vinci's use of sfumato technique masterfully blurs the lines and shadows, giving depth and realism. Set against a dreamy, vague landscape, the Mona Lisa's smile remains its most captivating and mysterious feature,
-         making it an iconic masterpiece of art history.` },
+         making it an iconic masterpiece of art history.`, prompt:"Tell me about Leonardo da Vinci in 100 words" },
         // ... add more objects as needed
     ]);
     const [hasPermission, setHasPermission] = useState(null);
     const [currentLocation, setCurrentLocation] = useState(null);
     const [path, setPath] = useState(null);
     const [isPickerVisible, setIsPickerVisible] = useState(false);
+    const [apiResponse, setApiResponse] = useState(null);
+    const [isApiResponseVisible, setIsApiResponseVisible] = useState(false);
+
 
 
    // Text-to-Speech function
-// Text-to-Speech function
-const speak = (text, languageCode) => {
+   const speak = (text, languageCode) => {
     const speechLanguage = convertToSpeechLanguageCode(languageCode);
     Speech.stop(); // Stop any previous speech
-    const contentToSpeak = translatedText || text; // Use translated text if available
+
+    // Determine the content to speak: use API response if visible, else use the item description or translated text
+    const contentToSpeak = isApiResponseVisible ? apiResponse : (translatedText || text);
+
     Speech.speak(contentToSpeak, {
         language: speechLanguage,
     });
 };
+
 
 // Function to convert Google Translate API language codes to Expo Speech format
 const convertToSpeechLanguageCode = (languageCode) => {
@@ -94,7 +102,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
         // Dummy userID for testing
         const userID = '1';
         try {
-            const response = await fetch(`http://10.192.12.40:3000/location/${userID}`);
+            const response = await fetch(`http://10.192.55.80:3000/location/${userID}`);
             const data = await response.json();
             console.log(data)
             setCurrentLocation(data.location);
@@ -131,6 +139,36 @@ const convertToSpeechLanguageCode = (languageCode) => {
             return text; // Return the original text if translation fails
         }
     };
+
+    const sendPromptToGolangAPI = async (prompt) => {
+        const golangAPIEndpoint = "http:/10.192.55.80:4040/chat"; // Replace with your GoLang API URL
+        setIsLoadingApiResponse(true); // Start loading
+        try {
+            const response = await axios.post(golangAPIEndpoint, { prompt: prompt });
+            const apiResponseText = response.data.response; // Assuming the response has a 'response' field
+    
+            // Translate the API response to the selected language
+            const translatedApiResponse = await translateText(apiResponseText, selectedLanguage);
+            setApiResponse(translatedApiResponse);
+            setIsApiResponseVisible(true); // Show the API response
+        } catch (error) {
+            console.error('Error sending prompt to GoLang API:', error);
+        }
+        setIsLoadingApiResponse(false); // End loading
+    };
+    
+    useEffect(() => {
+        // Function to update the API response when the selected language changes
+        const updateApiResponseLanguage = async () => {
+            if (apiResponse && isApiResponseVisible) {
+                const translatedApiResponse = await translateText(apiResponse, selectedLanguage);
+                setApiResponse(translatedApiResponse);
+            }
+        };
+    
+        updateApiResponseLanguage();
+    }, [selectedLanguage]);
+    
     
 
     // fetchObjectData function can be removed if not used elsewhere
@@ -151,17 +189,36 @@ const convertToSpeechLanguageCode = (languageCode) => {
                     <Text style={styles.nextStepText}>Next Step: {getNextStep()}</Text>
                 </View>
     
+                {isLoadingApiResponse && (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#0000ff" />
+                    </View>
+                )}
+
+
                 {/* Overlay content */}
                 {objectData.map((item, index) => (
                     <View key={index} style={styles.mediaContainer}>
-                    <TouchableOpacity style={styles.closeButton} onPress={() => removeImage(item.name)}>
-                        <Text style={styles.closeButtonText}>X</Text>
-                    </TouchableOpacity>
-                    <Image source={{ uri: item.url }} style={styles.media} />
-                    <Text style={styles.descriptionText}>
-                        {translatedText || item.description}
-                    </Text>
+                        <TouchableOpacity style={styles.closeButton} onPress={() => removeImage(item.name)}>
+                            <Text style={styles.closeButtonText}>X</Text>
+                        </TouchableOpacity>
+                        <Image source={{ uri: item.url }} style={styles.media} />
+                        
+                        {/* Conditionally render the API response or the item's description */}
+                        {isApiResponseVisible ? (
+                            <View style={styles.apiResponseContainer}>
+                                <Text style={styles.apiResponseText}>{apiResponse}</Text>
+                                <TouchableOpacity style={styles.apiResponseCloseButton} onPress={() => setIsApiResponseVisible(false)}>
+                                    <Text style={styles.closeButtonText}>X</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <Text style={styles.descriptionText}>
+                                {translatedText || item.description}
+                            </Text>
+                        )}
                     <View style={styles.actionContainer}>
+                       
                         {/* Translate button */}
                         <TouchableOpacity
                             style={styles.translateButton}
@@ -171,13 +228,24 @@ const convertToSpeechLanguageCode = (languageCode) => {
                         >
                             <MaterialIcons name="translate" size={24} color="white" />
                         </TouchableOpacity>
+
                         {/* Speak button */}
                         <TouchableOpacity
-                            style={styles.speakButton}
-                            onPress={() => speak(item.description, selectedLanguage)}
+                                style={styles.speakButton}
+                                onPress={() => speak(item.description, selectedLanguage)}
+                            >
+                                <AntDesign name="sound" size={24} color="white" />
+                            </TouchableOpacity>
+
+
+                         {/* GoLang API button */}
+                         <TouchableOpacity
+                            style={styles.apiButton}
+                            onPress={() => sendPromptToGolangAPI(item.prompt)}
                         >
-                           <AntDesign name="sound" size={24} color="white" />
+                             <Entypo name="info" size={24} color="white" />
                         </TouchableOpacity>
+
                     </View>
                 </View>
                 ))}
@@ -213,13 +281,20 @@ const convertToSpeechLanguageCode = (languageCode) => {
                     </View>
                     <TouchableOpacity
                         style={styles.doneButton}
-                        onPress={() => {
+                        onPress={async () => {
                             setIsPickerVisible(!isPickerVisible);
-                            translateText(objectData[0].description, selectedLanguage).then(setTranslatedText);
+                            if (isApiResponseVisible && apiResponse) {
+                                const translatedApiResponse = await translateText(apiResponse, selectedLanguage);
+                                setApiResponse(translatedApiResponse);
+                            } else {
+                                const translatedText = await translateText(objectData[0].description, selectedLanguage);
+                                setTranslatedText(translatedText);
+                            }
                         }}
                     >
                         <Text style={styles.textStyle}>Done</Text>
                     </TouchableOpacity>
+
                 </View>
             </Modal>
 
@@ -378,6 +453,44 @@ const styles = StyleSheet.create({
         alignItems: 'center', // Align children vertically
         marginTop: 10, // Add some space above the container
     },
+    apiResponseContainer: {
+        backgroundColor: '#f9f9f9', // Light background for the response container
+        padding: 10,
+        borderRadius: 10,
+        margin: 5,
+    },
+    apiResponseText: {
+        fontSize: 14,
+        color: 'black',
+    },
+    apiResponseCloseButton: {
+        position: 'absolute',
+        top: -15,
+        right: -5,
+        backgroundColor: 'white',
+        borderRadius: 15,
+        padding: 5,
+        zIndex: 1,
+    },
+    apiButton: {
+        backgroundColor: '#7574da', // Choose a color for your button
+        padding: 10,
+        borderRadius: 5,
+        marginHorizontal: 5, // Add space between buttons
+    },
+    loadingContainer: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(255,255,255,0.7)', // Semi-transparent background
+        zIndex: 1,
+    },
+    
+    
 });
 
 export default RFIDScreen;
