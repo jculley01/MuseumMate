@@ -9,26 +9,34 @@ function trilateration(distanceMap, userID, uwbDevices, rooms) {
 }
 
 function getThreeClosestUWBs(userSignalData, uwbDevices) {
-    // Step 1 & 2: Filter out invalid distances and find the three smallest distances
-    const validDistances = userSignalData
-        .map((distance, index) => ({ distance, uwbID: `uwb${index + 1}` }))
+    // Convert userSignalData to an array of { uwbID, distance } objects
+    // Assuming userSignalData is an array of distances keyed by UWB device ID
+    const uwbDistancePairs = Object.keys(uwbDevices).map(uwbID => ({
+        uwbID,
+        distance: userSignalData[uwbID - 1]
+    }));
+
+    // Filter out invalid distances and find the three smallest distances
+    const validDistances = uwbDistancePairs
         .filter(uwb => uwb.distance >= 0)
         .sort((a, b) => a.distance - b.distance)
         .slice(0, 3);
 
-    // Step 3: Create a new data structure with UWB ID, coordinates, and distance
-    const closestUWBs = validDistances.map(uwb => {
-        return {
-            uwbID: uwb.uwbID,
-            coordinates: uwbDevices[uwb.uwbID],
-            distance: uwb.distance
-        };
-    });
+    // Create a new data structure with UWB ID, coordinates, and distance
+    const closestUWBs = validDistances.map(uwb => ({
+        uwbID: uwb.uwbID,
+        coordinates: uwbDevices[uwb.uwbID],
+        distance: uwb.distance
+    }));
 
     return closestUWBs;
 }
 
+
 function trilaterate(point1, point2, point3) {
+    console.log("point1: ",point1);
+    console.log("point2: ", point2);
+    console.log("point3: ", point3);
     const xa = point1.coordinates.x;
     const ya = point1.coordinates.y;
     const xb = point2.coordinates.x;
@@ -43,7 +51,8 @@ function trilaterate(point1, point2, point3) {
     const T = (Math.pow(xa, 2.) - Math.pow(xb, 2.) + Math.pow(ya, 2.) - Math.pow(yb, 2.) + Math.pow(rb, 2.) - Math.pow(ra, 2.)) / 2.0;
     const y = ((T * (xb - xc)) - (S * (xb - xa))) / (((ya - yb) * (xb - xc)) - ((yc - yb) * (xb - xa)));
     const x = ((y * (ya - yb)) - T) / (xb - xa);
-
+    console.log("x: ", x);
+    console.log("y: ", y);
     return { x, y };
 }
 
@@ -58,6 +67,4 @@ function findUserRoom(userPosition, rooms) {
     return "User is not in any room";
 }
 
-module.exports = {
-    trilateration,
-}
+module.exports = trilateration;

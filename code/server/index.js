@@ -8,6 +8,7 @@ const tsp = require('./tsp');
 const SignalMap = require('./signalMap');
 const getObjects = require('./retrieveMedia');
 const { trainKNN } = require('./knnClassifier');
+const trilateration = require('./trilateration');
 const { trainingData, predictionData } = require('./knnTrainingData');
 const { getLocation }= require('./getLocation');
 const { InfluxDB, Point } = require('@influxdata/influxdb-client');
@@ -44,14 +45,10 @@ const beaconIDs = {
     "fc:f5:c4:07:65:6e": 10
 };
 
-const uwbIDs = {
-
-}
-
 const uwbDevices = {
-    "uwb1": { x: 0, y: 0 },
-    "uwb2": { x: 10, y: 5 },
-    "uwb3": { x: 5, y: 7 },
+    "1": { x: 0, y: 0 },
+    "2": { x: 3.89, y: 2.90 },
+    "3": { x: 3.13, y: 6.25 },
 };
 
 const rooms = {
@@ -131,15 +128,16 @@ server.on('error', (err) => {
 server.on('message', (msg, rinfo) => {
     //process the data
     let message = msg.toString();
+    console.log(message);
     let variables = message.split(',');
     let objArr = [];
     console.log(variables.length);
     if (variables.length % 3 == 0) {
         for (let i = 0; i < variables.length; i += 3) {
-            let uwbMac = variables[i].trim();
-            let uwbID = beaconIDs[uwbMac];
-            let userMac = variables[i + 1].trim();
-            let userID = userIDs[userMac];
+            let uwbID = variables[i].trim();
+            uwbID = parseInt(uwbID, 10).toString();
+            let userID = variables[i + 1].trim();
+            userID = parseInt(userID, 10).toString();
             let distance = variables[i + 2].trim();
             let point = new Point('uwbDistance')
                 .tag('uwbID', uwbID)
@@ -155,6 +153,7 @@ server.on('message', (msg, rinfo) => {
             objArr.push(messageObj);
         }
     }
+    console.log(objArr);
     signalMap.updateSignals(objArr, signalMap);
 });
 
@@ -204,7 +203,7 @@ const intervalId = setInterval(() => {
 
 setInterval(() => {
     signalMap.printAllSignals();
-    console.log(`The predicted location is: `, getLocation(signalMap, 4));
+    console.log(`The predicted location is: `, trilateration(signalMap, 1, uwbDevices, rooms));
 }, 10000)
 
 
