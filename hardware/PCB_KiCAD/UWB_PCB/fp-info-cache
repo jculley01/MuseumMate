@@ -1,4 +1,4 @@
-21742194170724944
+21742194774214171
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -53435,8 +53435,8 @@ Li-Ion_Charger
 
 
 0
-0
-0
+4
+4
 ESP32
 PinHeader_1x08_P2.54mm_Vertical
 Through hole straight pin header, 1x08, 2.54mm pitch, single row
