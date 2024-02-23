@@ -17,7 +17,7 @@ function CurrentLoc({navigation, route }) {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(`http://10.192.55.80:3000/location/${scannedValue}`);
+      const response = await fetch(`http://10.192.16.193:3000/location/${scannedValue}`);
       const data = await response.json();
       console.log(data);
       setImageNumber(data.location); // Assuming the response is the image number
@@ -47,7 +47,7 @@ function CurrentLoc({navigation, route }) {
         const userID = scannedValue; // Assuming scannedValue is the userID. Replace as needed.
         console.log('Sending rooms:', selectedRoomsArray);
 
-        const response = await fetch('http://10.192.55.80:3000/tsp-path', {
+        const response = await fetch('http://10.192.16.193:3000/tsp-path', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ function CurrentLoc({navigation, route }) {
         // Handle the response here
         const responseData = await response.json();
         console.log('Server response:', responseData);
-        navigation.navigate('RFIDScreen', { pathData: responseData.path })
+        navigation.navigate('RFIDScreen', { userID: scannedValue, pathData: responseData.path });
     } catch (error) {
         console.error('Error sending data:', error);
     }
