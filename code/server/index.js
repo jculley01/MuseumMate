@@ -14,6 +14,7 @@ const { getLocation }= require('./getLocation');
 const { InfluxDB, Point } = require('@influxdata/influxdb-client');
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
+const messageWss = new WebSocket.Server({ port: 9090 });
 const Minio = require('minio');
 
 const signalMap = new SignalMap();
@@ -31,6 +32,16 @@ var minioClient = new Minio.Client({
     accessKey: 'Fzmxk29NK7mhfEsEQ7l5',
     secretKey: 'lTpuETaLkJawA0FziIeDeGxZnvrKKalDnO5fu9iT',
 })
+
+
+const COUNTERS_FILE = './bucketAccessCounters.json';
+
+let bucketAccessCounters = {};
+try {
+    bucketAccessCounters = JSON.parse(fs.readFileSync(COUNTERS_FILE, 'utf8'));
+} catch (error) {
+    console.log('Starting with new counters.');
+}
 
 const beaconIDs = {
     "0c:dc:7e:cb:6a:b2": 1,
@@ -88,42 +99,18 @@ app.use(express.json());
 
 //---------------------------------------------------
 
+messageWss.on('connection', function connection(ws) {
+    console.log('A new client connected');
+    ws.on('message', function incoming(message) {
+        console.log('received: %s', message);
+    });
+});
+
 //turn the server on and report any errors that occur
 server.on('error', (err) => {
     console.error(`server error:\n${err.stack}`);
     server.close();
 });
-
-//turn the server on and handle all of the incoming UDP messages -> {beaconID, userID, signalStrength} which is coming from the userDevice (esp32)
-// server.on('message', (msg, rinfo) => {
-//     //process the data
-//     let message = msg.toString();
-//     let variables = message.split(',');
-//     let objArr = [];
-//     console.log(variables.length);
-//     if(variables.length % 3 == 0){
-//     for(let i = 0; i < variables.length; i+=3){
-//         let beaconMac = variables[i].trim();
-//         let beaconID = beaconIDs[beaconMac];
-//         let userMac = variables[i+1].trim();
-//         let userID = userIDs[userMac];
-//         let signalStrength = variables[i+2].trim();
-//         let point = new Point('beaconStrength')
-//             .tag('beaconID', beaconID)
-//             .tag('userID', userID)
-//             .floatField('signalStrength', signalStrength);
-
-//         writeClient.writePoint(point);
-//         let messageObj = {
-//             "beaconID": beaconID,
-//             "userID": userID,
-//             "signalStrength": signalStrength
-//         }
-//         objArr.push(messageObj);
-//     }
-// }
-// signalMap.updateSignals(objArr, signalMap);
-// });
 
 server.on('message', (msg, rinfo) => {
     //process the data
@@ -192,6 +179,9 @@ rfidServer.on('listening', () => {
 });
 
 
+//-------------------------------------------------------------------------------------------------------------------------------
+//interval processes
+
 console.log(trainingData.length);
 const intervalId = setInterval(() => {
     if (trainingData.length === 1203) {
@@ -206,7 +196,19 @@ setInterval(() => {
     console.log(`The predicted location is: `, trilateration(signalMap, 1, uwbDevices, rooms));
 }, 10000)
 
+setInterval(() => {
+    updateRoomOccupancy();
+}, 5000)
 
+setInterval(() => {
+    fs.writeFileSync(COUNTERS_FILE, JSON.stringify(bucketAccessCounters), 'utf8');
+}, 5 * 60 * 1000); // every 5 minutes
+
+// Save counters on graceful shutdown
+process.on('SIGINT', () => {
+    fs.writeFileSync(COUNTERS_FILE, JSON.stringify(bucketAccessCounters), 'utf8');
+    process.exit();
+});
 
 //----------------------------------------------------
 //endpoints
@@ -214,7 +216,7 @@ setInterval(() => {
 app.get('/location/:userID', (req, res) => {
     const userID = req.params.userID;
     // Assuming getLocation function takes userID and returns the location
-    const location = getLocation(signalMap, userID);
+    const location = trilateration(signalMap, userID, uwbDevices, rooms);
     if (location) {
         res.status(200).json({ userID: userID, location: location });
     } else {
@@ -225,7 +227,7 @@ app.get('/location/:userID', (req, res) => {
 app.get('/path/:userID', (req, res) => {
     const userID = req.params.userID;
     const endNode = req.query.endNode;
-    const startNode = getLocation(signalMap, userID);
+    const startNode = trilateration(signalMap, userID, uwbDevices, rooms);
 
     if (!startNode) {
         return res.status(404).send('Start location not found for given userID');
@@ -251,7 +253,7 @@ app.post('/tsp-path', (req, res) => {
         return res.status(400).send('Invalid nodes array: ');
     }
 
-    const startNode = getLocation(signalMap, userID); // Find the start location
+    const startNode = trilateration(signalMap, userID, uwbDevices, rooms); // Find the start location
 
     if (!startNode) {
         return res.status(404).send('Start location not found for given userID');
@@ -304,12 +306,77 @@ app.get('/rfid/:bucketName', async (req, res) => {
     }
 });
 
+app.post('/send-message', (req, res) => {
+    const { message } = req.body;
+    // Broadcast message to all connected WebSocket clients
+    messageWss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ message }));
+        }
+    });
+
+    res.send({ status: 'Message sent to all clients' });
+});
+
+app.use('/rfid/:bucketName', (req, res, next) => {
+    const bucketName = req.params.bucketName.trim();
+    if (!bucketAccessCounters[bucketName]) {
+        bucketAccessCounters[bucketName] = 0;
+    }
+    bucketAccessCounters[bucketName]++;
+
+    // Persist the updated counter to InfluxDB
+    const point = new Point('bucket_access')
+        .tag('bucketName', bucketName)
+        .intField('count', bucketAccessCounters[bucketName]);
+    writeApi.writePoint(point);
+    writeApi.flush().catch(err => console.error('Error writing to InfluxDB', err));
+
+    next();
+});
+
+
+//------------------------------------------------------------------------------------------------------------------
+//functions
+function updateRoomOccupancy() {
+    const roomCounts = {}; // Object to store the count of users in each room
+
+    // Initialize roomCounts with 0 for each room
+    Object.keys(rooms).forEach(room => {
+        roomCounts[room] = 0;
+    });
+
+    // Iterate through each user in the signal map
+    Object.keys(signalMap.userBeaconMap).forEach(userID => {
+        const roomName = trilateration(signalMap, userID, uwbDevices, rooms); // Adapt parameters as needed
+        if (roomName && roomCounts.hasOwnProperty(roomName)) {
+            roomCounts[roomName]++;
+        }
+    });
+
+    // Write the room occupancy counts to InfluxDB
+    Object.entries(roomCounts).forEach(([roomName, count]) => {
+        const point = new Point('roomOccupancy')
+            .tag('roomName', roomName)
+            .intField('count', count);
+        writeClient.writePoint(point);
+    });
+
+    // Flush the write client to send the data
+    writeClient.flush().catch(err => console.error('Error writing data to InfluxDB', err));
+}
 
 
 
 const port = parseInt(process.env.PORT) || 3000;
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
+});
+
+server.on('upgrade', (request, socket, head) => {
+    messageWss.handleUpgrade(request, socket, head, socket => {
+        messageWss.emit('connection', socket, request);
+    });
 });
 
 const PORT = 3333;
