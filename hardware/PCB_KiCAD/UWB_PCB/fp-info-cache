@@ -1,4 +1,4 @@
-21742194774214171
+21740491617233857
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -53417,13 +53417,6 @@ One digit LED 7 segment SA39-11 SC39-11 SA39-12 SC39-12
 10
 10
 ESP32
-ESP_UWB
-
-
-0
-35
-1
-ESP32
 ESP_UWB_Final
 Through hole straight socket strip, 2x20, 2.54mm pitch, double cols (from Kicad 4.0.7), script generated
 Through hole socket strip THT 2x20 2.54mm double row
@@ -53435,10 +53428,10 @@ Li-Ion_Charger
 
 
 0
-4
-4
+2
+2
 ESP32
-PinHeader_1x08_P2.54mm_Vertical
+RC522_Module
 Through hole straight pin header, 1x08, 2.54mm pitch, single row
 Through hole pin header THT 1x08 2.54mm single row
 0

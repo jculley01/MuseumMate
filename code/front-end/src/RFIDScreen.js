@@ -16,14 +16,14 @@ const RFIDScreen = ({ route }) => {
     const [selectedLanguage, setSelectedLanguage] = useState('en');
     const [translatedText, setTranslatedText] = useState('');
     const [isLoadingApiResponse, setIsLoadingApiResponse] = useState(false);
-
+    const userID = route.params?.userID;
 
     const [objectData, setObjectData] = useState([
         // Mock data
         { name: 'Object 1', url: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Mona_Lisa.jpg', description:`The Mona Lisa is a world-renowned portrait painted by Leonardo da Vinci during the Renaissance. Measuring 77 cm by 53 cm, it depicts a woman,
         commonly believed to be Lisa Gherardini, with a serene and enigmatic expression. Her gaze directly meets the viewer's, creating an intimate interaction. The painting is celebrated for its exquisite detail, the subtle modeling of forms, 
         and the atmospheric illusionism. Da Vinci's use of sfumato technique masterfully blurs the lines and shadows, giving depth and realism. Set against a dreamy, vague landscape, the Mona Lisa's smile remains its most captivating and mysterious feature,
-         making it an iconic masterpiece of art history.`, prompt:"Tell me about Leonardo da Vinci in 100 words" },
+         making it an iconic masterpiece of art history.`, prompts:["Tell me about Leonardo da Vinci in 100 words","Tell me about the time period the Monalisa was made in 100 words", "How many people visit the Mona Lisa yearly"] },
         // ... add more objects as needed
     ]);
     const [hasPermission, setHasPermission] = useState(null);
@@ -32,7 +32,9 @@ const RFIDScreen = ({ route }) => {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [apiResponse, setApiResponse] = useState(null);
     const [isApiResponseVisible, setIsApiResponseVisible] = useState(false);
-
+    const [selectedPrompt, setSelectedPrompt] = useState('');
+    const [isPromptPickerVisible, setIsPromptPickerVisible] = useState(false);
+    const promptLabels = ["Artist", "Style", "Time Period"];
 
 
    // Text-to-Speech function
@@ -99,17 +101,16 @@ const convertToSpeechLanguageCode = (languageCode) => {
     }, []);
 
     const fetchCurrentLocation = async () => {
-        // Dummy userID for testing
-        const userID = '1';
+        if (!userID) return; // Check if userID is available
         try {
-            const response = await fetch(`http://10.192.55.80:3000/location/${userID}`);
+            const response = await fetch(`http://10.192.16.193:3000/location/${userID}`);
             const data = await response.json();
-            console.log(data)
             setCurrentLocation(data.location);
         } catch (error) {
             console.error('Error fetching current location:', error);
         }
     };
+
 
     const getNextStep = () => {
         if (!currentLocation || !path) return null;
@@ -126,7 +127,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
         const params = {
             q: text,
             target: targetLanguage,
-            key: '' // Your API key
+            key: 'AIzaSyAnRjG1IiAcL2QzVTBDQK9XsbqmHY2-xXU' // Your API key
         };
     
         try {
@@ -141,7 +142,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
     };
 
     const sendPromptToGolangAPI = async (prompt) => {
-        const golangAPIEndpoint = "http:/10.192.55.80:4040/chat"; // Replace with your GoLang API URL
+        const golangAPIEndpoint = "http:/10.192.16.193:4040/chat"; // Replace with your GoLang API URL
         setIsLoadingApiResponse(true); // Start loading
         try {
             const response = await axios.post(golangAPIEndpoint, { prompt: prompt });
@@ -241,9 +242,11 @@ const convertToSpeechLanguageCode = (languageCode) => {
                          {/* GoLang API button */}
                          <TouchableOpacity
                             style={styles.apiButton}
-                            onPress={() => sendPromptToGolangAPI(item.prompt)}
+                            onPress={() => {
+                                setIsPromptPickerVisible(true);
+                            }}
                         >
-                             <Entypo name="info" size={24} color="white" />
+                            <Entypo name="info" size={24} color="white" />
                         </TouchableOpacity>
 
                     </View>
@@ -297,6 +300,43 @@ const convertToSpeechLanguageCode = (languageCode) => {
 
                 </View>
             </Modal>
+
+            {/* Prompt Picker Modal */}
+                        
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={isPromptPickerVisible}
+                onRequestClose={() => {
+                    setIsPromptPickerVisible(!isPromptPickerVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <Text>Learn more</Text>
+                    <View style={styles.modalView}>
+                        <Picker
+                            selectedValue={selectedPrompt}
+                            style={{ width: 200, height: 200 }}
+                            onValueChange={(itemValue) => setSelectedPrompt(itemValue)}
+                        >
+                            {objectData[0].prompts.map((prompt, index) => ( // Corrected from prompt.split(",") to prompts
+                                <Picker.Item key={index} label={promptLabels[index]} value={prompt} />
+                            ))}
+                        </Picker>
+                    </View>
+                    <TouchableOpacity
+                        style={styles.doneButton}
+                        onPress={() => {
+                            setIsPromptPickerVisible(!isPromptPickerVisible);
+                            sendPromptToGolangAPI(selectedPrompt);
+                        }}
+                    >
+                        <Text style={styles.textStyle}>Done</Text>
+                    </TouchableOpacity>
+                </View>
+            </Modal>
+
+
 
         </View>
     );

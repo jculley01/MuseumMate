@@ -1,0 +1,84 @@
+(footprint "RC522_Module" (version 20221018) (generator pcbnew)
+  (layer "F.Cu")
+  (descr "Through hole straight pin header, 1x08, 2.54mm pitch, single row")
+  (tags "Through hole pin header THT 1x08 2.54mm single row")
+  (attr through_hole)
+  (fp_text reference "REF**" (at 0 -17.39) (layer "F.SilkS") hide
+      (effects (font (size 1 1) (thickness 0.15)))
+    (tstamp 36f5edb3-9b59-4722-8398-bebae7dcb35c)
+  )
+  (fp_text value "RC522_Module" (at -0.05 18.05) (layer "F.Fab") hide
+      (effects (font (size 1 1) (thickness 0.15)))
+    (tstamp d4a9ac10-b1de-47d7-870b-64a03843df14)
+  )
+  (fp_text user "${REFERENCE}" (at 0 21.88 180) (layer "F.Fab")
+      (effects (font (size 1 1) (thickness 0.15)))
+    (tstamp ca802a7e-a5b8-4c7c-89d8-05cabf346e2d)
+  )
+  (fp_line (start -19.945 -29.72) (end -19.945 29.72)
+    (stroke (width 0.1) (type default)) (layer "F.SilkS") (tstamp 38f6b48b-b6a5-42c0-abb8-34daf8e9f922))
+  (fp_line (start -10.219999 26.56) (end -10.219999 27.89)
+    (stroke (width 0.12) (type solid)) (layer "F.SilkS") (tstamp eaed2793-c75a-4291-986d-83255a76cb62))
+  (fp_line (start -8.889999 26.56) (end -10.219999 26.56)
+    (stroke (width 0.12) (type solid)) (layer "F.SilkS") (tstamp b6b1c983-db3a-4dde-8b2c-e1cae6aee4cc))
+  (fp_line (start -7.62 26.56) (end -7.62 29.22)
+    (stroke (width 0.12) (type solid)) (layer "F.SilkS") (tstamp 71fb9fee-cf13-451b-89d0-30f643a19df2))
+  (fp_line (start -7.62 26.56) (end 10.22 26.56)
+    (stroke (width 0.12) (type solid)) (layer "F.SilkS") (tstamp a158832c-5ac0-48a1-9de3-660d6a4b2059))
+  (fp_line (start -7.62 29.22) (end 10.22 29.22)
+    (stroke (width 0.12) (type solid)) (layer "F.SilkS") (tstamp ccc4d12f-4e4b-477d-90e2-3bdd9b39ed6e))
+  (fp_line (start 10.22 26.56) (end 10.22 29.22)
+    (stroke (width 0.12) (type solid)) (layer "F.SilkS") (tstamp 8753beda-ae62-463c-b0b1-170295c8a6aa))
+  (fp_rect (start -19.945 -29.72) (end 19.945 29.72)
+    (stroke (width 0.1) (type default)) (fill none) (layer "F.SilkS") (tstamp ea93af0a-d966-4243-baac-28ffa8d0f3e5))
+  (fp_rect (start -20.49 -30.24) (end 20.59 30.43)
+    (stroke (width 0.05) (type default)) (fill none) (layer "F.CrtYd") (tstamp 3ed5e4dc-10cf-4a0d-9658-37e17519bfb1))
+  (fp_line (start 10.160001 29.160001) (end 10.160001 26.619999)
+    (stroke (width 0.1) (type solid)) (layer "F.Fab") (tstamp 20a85b68-5a84-4f8b-a689-6efb0fedaac4))
+  (pad "1" thru_hole rect (at -8.889999 27.89 90) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask") (tstamp 6af255a2-0ca3-45eb-9aef-e08eabacab61))
+  (pad "2" thru_hole oval (at -6.349999 27.89 90) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask") (tstamp ff657f04-ef47-4459-a075-b19482bc7e66))
+  (pad "3" thru_hole oval (at -3.809999 27.89 90) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask") (tstamp 9f9dd16b-946c-47e2-bd41-db918d39543c))
+  (pad "4" thru_hole oval (at -1.27 27.89 90) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask") (tstamp 96deebfc-56d8-494b-bb8b-c804b2d9fac3))
+  (pad "5" thru_hole oval (at 1.270001 27.89 90) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask") (tstamp ec742300-da39-41c3-882b-710f02be92e6))
+  (pad "6" thru_hole oval (at 3.810001 27.89 90) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask") (tstamp 067442a4-5bba-4fba-8538-cd60101b84d4))
+  (pad "7" thru_hole oval (at 6.350001 27.89 90) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask") (tstamp a4a20636-440b-4fb9-9c0d-1773d354adf3))
+  (pad "8" thru_hole oval (at 8.890001 27.89 90) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask") (tstamp a3732d2c-ad8c-4009-b7a6-1acbce6b3a60))
+  (zone (net 0) (net_name "") (layer "F.SilkS") (tstamp d66247c4-87e7-43c3-a9a0-d6ee04c347d3) (name "RFID_Reader") (hatch edge 0.5)
+    (connect_pads (clearance 0))
+    (min_thickness 0.25) (filled_areas_thickness no)
+    (keepout (tracks not_allowed) (vias not_allowed) (pads not_allowed) (copperpour allowed) (footprints allowed))
+    (fill (thermal_gap 0.5) (thermal_bridge_width 0.5))
+    (polygon
+      (pts
+        (xy 19.94 9.72)
+        (xy -19.94 9.72)
+        (xy -19.945 -29.72)
+        (xy 19.945 -29.72)
+      )
+    )
+  )
+  (group "" (id 350d862f-b4b1-44fa-9c8f-0a7a8fe968a5)
+    (members
+      067442a4-5bba-4fba-8538-cd60101b84d4
+      20a85b68-5a84-4f8b-a689-6efb0fedaac4
+      6af255a2-0ca3-45eb-9aef-e08eabacab61
+      71fb9fee-cf13-451b-89d0-30f643a19df2
+      8753beda-ae62-463c-b0b1-170295c8a6aa
+      96deebfc-56d8-494b-bb8b-c804b2d9fac3
+      9f9dd16b-946c-47e2-bd41-db918d39543c
+      a158832c-5ac0-48a1-9de3-660d6a4b2059
+      a3732d2c-ad8c-4009-b7a6-1acbce6b3a60
+      a4a20636-440b-4fb9-9c0d-1773d354adf3
+      b6b1c983-db3a-4dde-8b2c-e1cae6aee4cc
+      ccc4d12f-4e4b-477d-90e2-3bdd9b39ed6e
+      eaed2793-c75a-4291-986d-83255a76cb62
+      ec742300-da39-41c3-882b-710f02be92e6
+      ff657f04-ef47-4459-a075-b19482bc7e66
+    )
+  )
+  (model "${KICAD6_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x08_P2.54mm_Vertical.wrl" hide
+    (offset (xyz 0 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 0))
+  )
+)
