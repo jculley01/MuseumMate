@@ -3,6 +3,7 @@ const server = dgram.createSocket('udp4');
 const os = require('os');
 const rfidServer = dgram.createSocket('udp4');
 const express = require('express');
+const fs = require('fs');
 const djikstra = require('./dijkstra');
 const tsp = require('./tsp');
 const SignalMap = require('./signalMap');
@@ -14,7 +15,7 @@ const { getLocation }= require('./getLocation');
 const { InfluxDB, Point } = require('@influxdata/influxdb-client');
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
-const messageWss = new WebSocket.Server({ port: 9090 });
+const messageWss = new WebSocket.Server({ port: 6060 });
 const Minio = require('minio');
 
 const signalMap = new SignalMap();
@@ -23,7 +24,7 @@ const url = 'http://localhost:8086';
 const client = new InfluxDB({ url, token });
 const app = express();
 let org = `API-Observability`;
-let bucket = `metrics`;
+let bucket = `dashboard`;
 let writeClient = client.getWriteApi(org, bucket, 'ns');
 var minioClient = new Minio.Client({
     endPoint: 'localhost',
@@ -57,14 +58,14 @@ const beaconIDs = {
 };
 
 const uwbDevices = {
-    "1": { x: 0, y: 0 },
-    "2": { x: 3.89, y: 2.90 },
-    "3": { x: 3.13, y: 6.25 },
+    "1": { x: 0, y: 1.982 },
+    "2": { x: 2.51, y: 7.15 },
+    "3": { x: 6.7, y: 5.063 },
 };
 
 const rooms = {
-    "room1": { x1: 0, y1: 0, x2: 5, y2: 5 },
-    "room2": { x1: 6, y1: 0, x2: 10, y2: 5 },
+    "1.1": { x1: 0, y1: 0, x2: 6.748, y2: 3.58 },
+    "1.2": { x1: 0, y1: 3.59, x2: 6.748, y2: 7.19 },
 };
 
 const RFIDs = {
@@ -115,10 +116,10 @@ server.on('error', (err) => {
 server.on('message', (msg, rinfo) => {
     //process the data
     let message = msg.toString();
-    console.log(message);
+    console.log("raw message: ",message);
     let variables = message.split(',');
     let objArr = [];
-    console.log(variables.length);
+    console.log("message length: ",variables.length);
     if (variables.length % 3 == 0) {
         for (let i = 0; i < variables.length; i += 3) {
             let uwbID = variables[i].trim();
@@ -140,7 +141,7 @@ server.on('message', (msg, rinfo) => {
             objArr.push(messageObj);
         }
     }
-    console.log(objArr);
+    console.log("objArr: ",objArr);
     signalMap.updateSignals(objArr, signalMap);
 });
 
@@ -293,6 +294,7 @@ app.get('/rfid/:bucketName', async (req, res) => {
 
         // Construct object data with the IPv4 address in the URL
         const objectData = objects.map(obj => {
+            console.log("objectName: ",obj.name);
             return {
                 name: obj.name,
                 url: `http://${ipv4Address}:9000/${bucketName}/${obj.name}`
@@ -381,5 +383,5 @@ server.on('upgrade', (request, socket, head) => {
 
 const PORT = 3333;
 server.bind(PORT);
-rfidServer.bind(3334);
+rfidServer.bind(5555);
 
