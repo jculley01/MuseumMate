@@ -23,7 +23,7 @@ const ExhibitOverview = ({ data }) => {
   return (
     <BackCard>
       <div className="card-header" style={{ marginLeft: '15px', marginRight: '15px' }}>
-        <CardTitle style={{ marginLeft: '15px', marginRight: '15px', marginTop: '10px'}}/>
+        <CardTitle style={{ marginLeft: '15px', marginRight: '15px', marginTop: '10px' }}/>
         <Dropdown />
       </div>
       <div style={{ display: 'flex', position: 'relative', paddingBottom: '130px' }}>
