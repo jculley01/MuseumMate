@@ -16,6 +16,7 @@ const styles = {
     color: '#ffffff',
     backgroundColor: '#5856d6',
     outline: 'none',
+    marginLeft: '5px'
   },
   Icon: {
     color: '#ffffff',

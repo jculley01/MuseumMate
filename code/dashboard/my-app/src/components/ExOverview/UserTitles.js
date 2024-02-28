@@ -11,15 +11,16 @@ const styles = {
 };
 
 const defaultProps = {
-  text: '534 users',
+  text: '534 Users',
 };
 
 const UserTitles = (props) => {
   return (
-    <div style={styles.Text}>
+    <div style={{ ...styles.Text, fontSize: '30px' }}>
       {props.text ?? defaultProps.text}
     </div>
   );
+
 };
 
 export default UserTitles;

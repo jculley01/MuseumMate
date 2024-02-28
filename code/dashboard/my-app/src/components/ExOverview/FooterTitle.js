@@ -7,6 +7,7 @@ const styles = {
     fontFamily: 'Source Sans Pro',
     fontWeight: 600,
     lineHeight: '24px',
+    display: 'flex'
   },
 };
 

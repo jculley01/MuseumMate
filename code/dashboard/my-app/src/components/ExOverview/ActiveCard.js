@@ -2,14 +2,13 @@ import React from 'react';
 
 const styles = {
   Card: {
-    display: 'flex',
-    justifyContent: 'space-around',
-    top: '22.5rem',
-    left: '22.5rem',
-    width: '43.125rem',
-    height: '7.625rem',
+    top: '0',
+    left: '0',
+    width: '690px',
+    height: '122px',
     backgroundColor: '#c7c7f1',
-    borderRadius: '1.5rem',
+    borderRadius: '24px',
+    position: 'absolute', // Positioning within the container
   },
 };
 

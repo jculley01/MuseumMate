@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import ExhibitOverview from './components/ExOverview/ExhibitOverview';
 import VisitorFeedLink from './components/VisFeed/VisitorFeedLink';

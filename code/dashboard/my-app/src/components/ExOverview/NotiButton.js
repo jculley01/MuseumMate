@@ -18,6 +18,9 @@ const styles = {
     fontWeight: 700,
     lineHeight: '16px',
     outline: 'none',
+    display: 'flex',
+    justifyContent: 'center', // Centers content horizontally
+    alignItems: 'center', // Centers content vertically
   },
 };
 
