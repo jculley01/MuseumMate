@@ -10,7 +10,7 @@ const styles = {
     backgroundColor: '#f0f0f0', // Your specified background
     borderRadius: '24px',
     marginTop: '5px',
-    marginRight: '67px'
+    marginRight: '35px'
   },
 };
 
