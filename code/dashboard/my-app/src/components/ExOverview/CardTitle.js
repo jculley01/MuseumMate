@@ -7,6 +7,10 @@ const styles = {
     fontFamily: 'Source Sans Pro',
     fontWeight: 600,
     lineHeight: '32px',
+    marginLeft: '90px',
+    marginTop: '10px',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
 };
 

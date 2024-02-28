@@ -18,6 +18,9 @@ const styles = {
     fontWeight: 700,
     lineHeight: '16px',
     outline: 'none',
+    alignItems: 'center',
+    justifyContent: 'center', 
+    marginLeft: '42px'
   },
 };
 

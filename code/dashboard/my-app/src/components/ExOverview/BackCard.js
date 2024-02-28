@@ -8,6 +8,9 @@ const styles = {
     height: '17rem',
     backgroundColor: '#f0f0f0',
     borderRadius: '24px',
+    alignItems: 'center',
+    justifyContent: 'center', 
+    marginLeft: '30px'
   },
 };
 

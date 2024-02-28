@@ -9,7 +9,8 @@ const styles = {
     backgroundColor: '#f0f0f0',
     borderRadius: '24px',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginTop: '80px'
   },
 };
 

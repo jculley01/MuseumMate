@@ -9,6 +9,7 @@ const styles = {
     backgroundColor: '#c7c7f1',
     borderRadius: '24px',
     position: 'absolute', // Positioning within the container
+    marginLeft: '12px'
   },
 };
 

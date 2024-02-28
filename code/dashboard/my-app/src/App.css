@@ -1,47 +1,58 @@
 .App {
   font-family: 'Arial', sans-serif;
-  /* Use your preferred font here */
   background-color: #DEEDF7;
-  /* Background color for the app */
   padding: 20px;
-  /* Padding around the app */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Centers the content */
 }
 
 .top-section {
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
-  /* Space between the top-section and the chart */
+  width: 100%;
+  /* Adjust this based on your design requirements */
+  max-width: 1200px;
+  /* Prevents the panels from stretching too much on wider screens */
 }
 
-.left-panel,
+.left-panel {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  flex: 2;
+  /* Adjust the flex ratio based on your design */
+  margin-right: 20px;
+}
+
 .right-panel {
   background-color: #ffffff;
   padding: 20px;
   border-radius: 10px;
-  /* Rounded corners for the panels */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  /* Subtle shadow for depth */
-}
-
-.left-panel {
-  flex: 3;
-  /* Left panel takes up more space */
-  margin-right: 20px;
-  /* Space between the two panels */
-}
-
-.right-panel {
   flex: 1;
+  /* Ensures this panel is smaller than the left panel */
+  display: flex;
+  /* Enables internal flex layout for vertical alignment */
+  flex-direction: column;
+  /* Stacks children vertically */
+  justify-content: space-between;
+  /* Separates the children within the panel */
 }
 
 .RoomCapacityChart {
   width: 100%;
-  /* Chart takes full width */
+  max-width: 1200px;
+  /* Aligns with the max-width of the top-section */
   padding: 20px;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  /* Adds space between this section and the top-section */
 }
 
 .App-logo {
