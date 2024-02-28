@@ -22,12 +22,17 @@ function App() {
   return (
     <div className="App">
       <div className="top-section">
-        <ExhibitOverview data={mockData.exhibitOverview} />
-        <VisitorFeedLink />
+        <div className="left-panel">
+          <ExhibitOverview data={mockData.exhibitOverview} />
+        </div>
+        <div className="right-panel">
+          <VisitorFeedLink />
+        </div>
       </div>
       <RoomCapacityChart />
     </div>
   );
 }
+
 
 export default App;
