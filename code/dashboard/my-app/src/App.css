@@ -1,12 +1,31 @@
 .App {
   font-family: 'Arial', sans-serif;
   background-color: #DEEDF7;
-  padding: 20px;
+  padding: 0.125rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100vh; 
+   overflow: hidden;
+  /* Centers the content */
+  margin: 0;
+}
+
+.sidebar {
+  /* Removed fixed width here */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  /* Centers the content */
+  height: 100%; /* Full height */
+  background-color: #ffffff; /* Adjust color as needed */
+  overflow: auto; /* Scrollbar if content overflows */
 }
+
+.main-content {
+  margin-left: 0.3125rem;
+  flex-grow: 1;
+  overflow: auto; /* Scrollbar if content overflows */
+}
+
 
 .top-section {
   display: flex;
@@ -14,7 +33,7 @@
   margin-bottom: 20px;
   width: 100%;
   /* Adjust this based on your design requirements */
-  max-width: 1200px;
+  max-width: 75rem;
   /* Prevents the panels from stretching too much on wider screens */
 }
 
@@ -26,6 +45,7 @@
   flex: 2;
   /* Adjust the flex ratio based on your design */
   margin-right: 20px;
+  height: 10%;
 }
 
 .right-panel {
@@ -41,18 +61,33 @@
   /* Stacks children vertically */
   justify-content: space-between;
   /* Separates the children within the panel */
+  height: min-content;
+}
+
+.right-sub{
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  /* Ensures this panel is smaller than the left panel */
+  display: flex;
+  /* Enables internal flex layout for vertical alignment */
+  flex-direction: column;
+  /* Stacks children vertically */
+  justify-content: space-between;
+  /* Separates the children within the panel */
+  height: min-content;
 }
 
 .RoomCapacityChart {
-  width: 100%;
-  max-width: 1200px;
-  /* Aligns with the max-width of the top-section */
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
-  /* Adds space between this section and the top-section */
+    top: -17.6875rem;
+    left: 0px;
+    width: 48.5rem;
+    position: relative;
+    height: 25rem;
+    background-color: rgb(240, 240, 240);
+    border-radius: 24px;
 }
 
 .App-logo {

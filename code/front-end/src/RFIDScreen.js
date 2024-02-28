@@ -18,14 +18,7 @@ const RFIDScreen = ({ route }) => {
     const [isLoadingApiResponse, setIsLoadingApiResponse] = useState(false);
     const userID = route.params?.userID;
 
-    const [objectData, setObjectData] = useState([
-        // Mock data
-        { name: 'Object 1', url: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Mona_Lisa.jpg', description:`The Mona Lisa is a world-renowned portrait painted by Leonardo da Vinci during the Renaissance. Measuring 77 cm by 53 cm, it depicts a woman,
-        commonly believed to be Lisa Gherardini, with a serene and enigmatic expression. Her gaze directly meets the viewer's, creating an intimate interaction. The painting is celebrated for its exquisite detail, the subtle modeling of forms, 
-        and the atmospheric illusionism. Da Vinci's use of sfumato technique masterfully blurs the lines and shadows, giving depth and realism. Set against a dreamy, vague landscape, the Mona Lisa's smile remains its most captivating and mysterious feature,
-         making it an iconic masterpiece of art history.`, prompts:["Tell me about Leonardo da Vinci in 100 words","Tell me about the time period the Monalisa was made in 100 words", "How many people visit the Mona Lisa yearly"] },
-        // ... add more objects as needed
-    ]);
+    const [objectData, setObjectData] = useState([]);
     const [hasPermission, setHasPermission] = useState(null);
     const [currentLocation, setCurrentLocation] = useState(null);
     const [path, setPath] = useState(null);
@@ -79,17 +72,17 @@ const convertToSpeechLanguageCode = (languageCode) => {
         if (route.params?.pathData) {
             setPath(route.params.pathData);
         }
-
-        // WebSocket code commented out
-        // const ws = new WebSocket('ws://10.239.5.44:8080');
-        // ws.onopen = () => console.log('WebSocket connection established');
-        // ws.onmessage = (e) => {
-        //     const message = JSON.parse(e.data);
-        //     setRFIDData(message);
-        //     fetchObjectData(message.RFID);
-        // };
-        // ws.onclose = () => console.log('WebSocket connection closed');
-        // return () => ws.close();
+        //fetchObjectData();
+        const ws = new WebSocket('ws://10.192.45.20:8080');
+        ws.onopen = () => console.log('WebSocket connection established');
+        ws.onmessage = (e) => {
+            const message = JSON.parse(e.data);
+            console.log('rfidws'+message)
+            setRFIDData(message);
+            fetchObjectData(message.RFID);
+        };
+        ws.onclose = () => console.log('WebSocket connection closed');
+        return () => ws.close();
     }, [route.params?.pathData]);
 
     useEffect(() => {
@@ -103,7 +96,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
     const fetchCurrentLocation = async () => {
         if (!userID) return; // Check if userID is available
         try {
-            const response = await fetch(`http://10.192.16.193:3000/location/${userID}`);
+            const response = await fetch(`http://10.192.45.20:3000/location/${userID}`);
             const data = await response.json();
             setCurrentLocation(data.location);
         } catch (error) {
@@ -142,7 +135,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
     };
 
     const sendPromptToGolangAPI = async (prompt) => {
-        const golangAPIEndpoint = "http:/10.192.16.193:4040/chat"; // Replace with your GoLang API URL
+        const golangAPIEndpoint = "http:/10.192.39.193:4040/chat"; // Replace with your GoLang API URL
         setIsLoadingApiResponse(true); // Start loading
         try {
             const response = await axios.post(golangAPIEndpoint, { prompt: prompt });
@@ -172,7 +165,57 @@ const convertToSpeechLanguageCode = (languageCode) => {
     
     
 
-    // fetchObjectData function can be removed if not used elsewhere
+    const fetchObjectData = async (RFID) => {
+        try {
+            const response = await fetch(`http://10.192.45.20:3000/rfid/museummate0001`);
+           // console.log('rfid response:', response);
+    
+            if (!response.ok) {
+                console.error('Server responded with an error:', response.status, response.statusText);
+                return;
+            }
+    
+            const data = await response.json();
+    
+            // Initialize an object to hold the fetched contents
+            const fetchedData = {
+                description: '',
+                img: '',
+                prompts: []
+            };
+    
+            // Fetch each URL based on the type of content it holds
+            for (const item of data) {
+                const contentResponse = await fetch(item.url);
+                if (!contentResponse.ok) {
+                    console.error(`Error fetching ${item.name}:`, contentResponse.status, contentResponse.statusText);
+                    continue; // Skip this item if there's an error
+                }
+                if (item.name.includes('desc')) {
+                    fetchedData.description = await contentResponse.text();
+                } else if (item.name.includes('img')) {
+                    // Assuming the image URL is directly usable
+                    fetchedData.img = item.url;
+                } else if (item.name.includes('prompt')) {
+                    const promptsText = await contentResponse.text();
+                    fetchedData.prompts = promptsText.split(','); // Assuming each prompt is on a new line
+                }
+            }
+    
+            setObjectData([{
+                name: `Object museummate0001`, // You might want to adjust this based on your actual data structure
+                url: fetchedData.img,
+                description: fetchedData.description,
+                prompts: fetchedData.prompts,
+            }]);
+
+            
+        } catch (error) {
+            console.error('Error fetching object data:', error);
+        }
+    };
+    
+
 
     if (hasPermission === null) {
         return <View />;
@@ -319,9 +362,10 @@ const convertToSpeechLanguageCode = (languageCode) => {
                             style={{ width: 200, height: 200 }}
                             onValueChange={(itemValue) => setSelectedPrompt(itemValue)}
                         >
-                            {objectData[0].prompts.map((prompt, index) => ( // Corrected from prompt.split(",") to prompts
+                            {objectData.length > 0 && objectData[0].prompts.map((prompt, index) => (
                                 <Picker.Item key={index} label={promptLabels[index]} value={prompt} />
                             ))}
+
                         </Picker>
                     </View>
                     <TouchableOpacity

@@ -13,6 +13,8 @@ import ActiveLabel from './ActiveLabel.js';
 import PrecentChange from './PrecentChange';
 import UserTitles from './UserTitles.js';
 
+
+
 const ExhibitOverview = ({ data }) => {
   const activeUsers = 534;
   const activeUsersPercentageChange = 28.4;

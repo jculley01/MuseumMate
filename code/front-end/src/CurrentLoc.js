@@ -17,7 +17,7 @@ function CurrentLoc({navigation, route }) {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(`http://10.192.16.193:3000/location/${scannedValue}`);
+      const response = await fetch(`http://10.192.45.20:3000/location/${scannedValue}`);
       const data = await response.json();
       console.log(data);
       setImageNumber(data.location); // Assuming the response is the image number
@@ -47,7 +47,7 @@ function CurrentLoc({navigation, route }) {
         const userID = scannedValue; // Assuming scannedValue is the userID. Replace as needed.
         console.log('Sending rooms:', selectedRoomsArray);
 
-        const response = await fetch('http://10.192.16.193:3000/tsp-path', {
+        const response = await fetch('http://10.192.45.20:3000/tsp-path', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
