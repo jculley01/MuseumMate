@@ -1,5 +1,58 @@
 .App {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 20px;
+  /* Adds space between top-section and RoomCapacityChart */
+}
+
+.top-section {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  /* Adjust this as necessary to fit your layout */
+  gap: 20px;
+  /* Adjust this value for spacing between left-panel and right-panel */
+}
+
+.left-panel {
+  flex: 3;
+  /* Left panel takes up 3 parts of the flex container */
+  padding: 20px;
+  /* Adjust padding as needed */
+  background: #fff;
+  /* Replace with your desired background color */
+  border-radius: 8px;
+  /* Rounded corners */
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  /* Soft shadow for card effect */
+}
+
+.right-panel {
+  flex: 1;
+  /* Right panel takes up 1 part of the flex container */
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.RoomCapacityChart {
+  width: 100%;
+  /* Chart takes full width */
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.top-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  /* Adjust this as necessary to fit your layout */
 }
 
 .App-logo {

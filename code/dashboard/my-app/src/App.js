@@ -21,9 +21,11 @@ let mockData={
 function App() {
   return (
     <div className="App">
-      <ExhibitOverview  data={mockData.exhibitOverview}/>
-      <VisitorFeedLink/>
-      <RoomCapacityChart/>
+      <div className="top-section">
+        <ExhibitOverview data={mockData.exhibitOverview} />
+        <VisitorFeedLink />
+      </div>
+      <RoomCapacityChart />
     </div>
   );
 }

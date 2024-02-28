@@ -1,5 +1,7 @@
 import React from 'react';
 import Chart from 'react-apexcharts';
+import Card from './ChartCard';
+import Dropdown from './ChartDropdown';
 
 class RoomCapacityChart extends React.Component {
   constructor(props) {
@@ -56,14 +58,19 @@ class RoomCapacityChart extends React.Component {
 
   render() {
     return (
-      <div id="chart">
-        <Chart
-          options={this.state.options}
-          series={this.state.series}
-          type="bar"
-          height={350}
-        />
-      </div>
+      <Card className="chart-card-container">
+        <div className="chart-header">
+          <Dropdown />
+        </div>
+        <div id="chart">
+          <Chart
+            options={this.state.options}
+            series={this.state.series}
+            type="bar"
+            height={350}
+          />
+        </div>
+      </Card>
     );
   }
 }
