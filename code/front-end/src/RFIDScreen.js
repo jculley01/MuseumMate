@@ -28,7 +28,8 @@ const RFIDScreen = ({ route }) => {
     const [selectedPrompt, setSelectedPrompt] = useState('');
     const [isPromptPickerVisible, setIsPromptPickerVisible] = useState(false);
     const promptLabels = ["Artist", "Style", "Time Period"];
-
+    const serverIP=''
+    const myIP=''
 
    // Text-to-Speech function
    const speak = (text, languageCode) => {
@@ -73,7 +74,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
             setPath(route.params.pathData);
         }
         //fetchObjectData();
-        const ws = new WebSocket('ws://10.192.45.20:8080');
+        const ws = new WebSocket(`ws://${serverIP}:8080`);
         ws.onopen = () => console.log('WebSocket connection established');
         ws.onmessage = (e) => {
             const message = JSON.parse(e.data);
@@ -96,7 +97,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
     const fetchCurrentLocation = async () => {
         if (!userID) return; // Check if userID is available
         try {
-            const response = await fetch(`http://10.192.45.20:3000/location/${userID}`);
+            const response = await fetch(`http://${serverIP}:3000/location/${userID}`);
             const data = await response.json();
             setCurrentLocation(data.location);
         } catch (error) {
@@ -135,7 +136,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
     };
 
     const sendPromptToGolangAPI = async (prompt) => {
-        const golangAPIEndpoint = "http:/10.192.39.193:4040/chat"; // Replace with your GoLang API URL
+        const golangAPIEndpoint = `http:/${myIP}:4040/chat`; // Replace with your GoLang API URL
         setIsLoadingApiResponse(true); // Start loading
         try {
             const response = await axios.post(golangAPIEndpoint, { prompt: prompt });
@@ -167,7 +168,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
 
     const fetchObjectData = async (RFID) => {
         try {
-            const response = await fetch(`http://10.192.45.20:3000/rfid/museummate0001`);
+            const response = await fetch(`http://${serverIP}:3000/rfid/museummate0001`);
            // console.log('rfid response:', response);
     
             if (!response.ok) {

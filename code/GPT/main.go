@@ -15,7 +15,7 @@ import (
 )
 
 const chatGPTAPIURL = "https://api.openai.com/v1/chat/completions"
-const apiKey = "Bearer " // Hardcoded API Key
+const apiKey = "Bearer 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" // Hardcoded API Key
 
 // ChatGPTResponse defines the structure of the response received from the OpenAI API
 type ChatGPTResponse struct {

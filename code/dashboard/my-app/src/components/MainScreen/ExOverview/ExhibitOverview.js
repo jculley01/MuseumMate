@@ -10,7 +10,7 @@ import FooterTitle from './FooterTitle.js';
 import ActiveIcon from './ActiveIcon.js';
 import TotalIcon from './TotalIcon.js';
 import ActiveLabel from './ActiveLabel.js';
-import PrecentChange from './PrecentChange';
+import PrecentChange from './PrecentChange.js';
 import UserTitles from './UserTitles.js';
 
 
