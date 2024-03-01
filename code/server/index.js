@@ -111,7 +111,7 @@ server.on('error', (err) => {
 
 server.on('message', (msg, rinfo) => {
     //process the data
-    let message = msg.toString();
+    let message = msg.toString().slice(0, -1);
     console.log("raw message: ",message);
     let variables = message.split(',');
     let objArr = [];
@@ -264,7 +264,6 @@ app.post('/tsp-path', (req, res) => {
     }
 });
 
-
 // run this command in the directory with the minio executable to start the server: .\minio.exe server C:\minio --console-address :9090
 app.get('/rfid/:bucketName', async (req, res) => {
     try {
@@ -364,8 +363,6 @@ function updateRoomOccupancy() {
     writeClient.flush().catch(err => console.error('Error writing data to InfluxDB', err));
 }
 
-
-
 const port = parseInt(process.env.PORT) || 3000;
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
@@ -379,5 +376,5 @@ server.on('upgrade', (request, socket, head) => {
 
 const PORT = 3333;
 server.bind(PORT);
-rfidServer.bind(5555);
+rfidServer.bind(3334);
 
