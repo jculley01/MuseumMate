@@ -12,7 +12,7 @@ const { trainKNN } = require('./knnClassifier');
 const trilateration = require('./trilateration');
 const { trainingData, predictionData } = require('./knnTrainingData');
 const { getLocation }= require('./getLocation');
-const { InfluxDB, Point } = require('@influxdata/influxdb-client');
+const { InfluxDB, Point, flux } = require('@influxdata/influxdb-client');
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
 const messageWss = new WebSocket.Server({ port: 6060 });
@@ -78,19 +78,14 @@ const RFIDs = {
 };
 
 
-
+let userDeviceMap = {};
+let userLastRoom = {};
 
 const graph = {
     '1.1': { '1.2': 5 },
     '1.2': { '1.1': 5 },
 };
 
-const userIDs = {
-    "30:ae:a4:1a:91:c2": 1,
-    "30:ae:a4:28:c2:16": 2,
-    "0c:dc:7e:cb:17:1a": 3,
-    "fc:f5:c4:06:f4:46": 4
-};
 
 app.use(express.json());
 
@@ -110,36 +105,36 @@ server.on('error', (err) => {
 });
 
 server.on('message', (msg, rinfo) => {
-    //process the data
-    let message = msg.toString().slice(0, -1);
-    console.log("raw message: ",message);
+    let message = msg.toString().slice(0, -1); // Assuming your message format requires trimming the last character
     let variables = message.split(',');
     let objArr = [];
-    console.log("message length: ",variables.length);
-    if (variables.length % 3 == 0) {
+
+    if (variables.length % 3 == 0) { // Adjusted for sets of three variables: uwbID, userID, distance
         for (let i = 0; i < variables.length; i += 3) {
             let uwbID = variables[i].trim();
             uwbID = parseInt(uwbID, 10).toString();
             let userID = variables[i + 1].trim();
             userID = parseInt(userID, 10).toString();
             let distance = variables[i + 2].trim();
-            let point = new Point('uwbDistance')
-                .tag('uwbID', uwbID)
-                .tag('userID', userID)
-                .floatField('distance', distance);
 
-            writeClient.writePoint(point);
+            // Update the global mapping with the latest client info
+            userDeviceMap[userID] = { ip: rinfo.address, port: rinfo.port };
+
+            // Create and process your message object as needed
             let messageObj = {
                 "uwbID": uwbID,
                 "userID": userID,
-                "distance": distance
-            }
+                "distance": distance,
+            };
             objArr.push(messageObj);
         }
     }
-    console.log("objArr: ",objArr);
+
+    console.log("objArr: ", objArr);
+    // Assuming signalMap.updateSignals does something with objArr
     signalMap.updateSignals(objArr, signalMap);
 });
+
 
 //turn the server on and begin listening for incoming data
 server.on('listening', () => {
@@ -195,7 +190,8 @@ setInterval(() => {
 
 setInterval(() => {
     updateRoomOccupancy();
-}, 5000)
+    updateUserRoomDurations();
+}, 3000)
 
 setInterval(() => {
     fs.writeFileSync(COUNTERS_FILE, JSON.stringify(bucketAccessCounters), 'utf8');
@@ -224,6 +220,15 @@ app.get('/location/:userID', (req, res) => {
 app.get('/path/:userID', (req, res) => {
     const userID = req.params.userID;
     const endNode = req.query.endNode;
+
+    const roomAccessPoint = new Point('room_access')
+        .tag('roomID', endNode)
+        .intField('count', 1);
+
+    writeClient.writePoint(roomAccessPoint);
+    writeClient.flush().catch(err => console.error('Error writing to InfluxDB', err));
+
+    // Assuming trilateration and the dijkstra's algorithm implementation are correctly defined elsewhere
     const startNode = trilateration(signalMap, userID, uwbDevices, rooms);
 
     if (!startNode) {
@@ -236,33 +241,55 @@ app.get('/path/:userID', (req, res) => {
     const path = djikstra.dijkstra(graph, startNode, endNode);
 
     if (path) {
+        // Now using userID directly, assuming sendMessageToDevice handles looking up the user's device info
+        sendMessageToDevice(userID, "fast");
         res.status(200).json({ userID: userID, path: path });
+        // Tracking the device's movement towards the end node in the background
+        trackDeviceToEndNode(userID, endNode);
     } else {
         res.status(404).send('Path not found');
     }
 });
 
-
 //   /tsp-path and then in the request body include an object that includes userID and an array of nodes ex. {"userID": "1", "nodes": ["1.1", "2.1", "3.2"]}
 app.post('/tsp-path', (req, res) => {
     const { userID, nodes } = req.body; // Extract userID and nodes array from the request body
+
+    nodes.forEach(node => {
+        const roomAccessPoint = new Point('room_access')
+            .tag('roomID', node)
+            .intField('count', 1); // Assuming each call increments by 1
+
+        writeClient.writePoint(roomAccessPoint);
+    });
+    writeClient.flush().catch(err => console.error('Error writing to InfluxDB', err));
+
+
     if (!Array.isArray(nodes) || nodes.length === 0) {
-        return res.status(400).send('Invalid nodes array: ');
+        return res.status(400).send('Invalid nodes array.');
     }
 
-    const startNode = trilateration(signalMap, userID, uwbDevices, rooms); // Find the start location
+    // Attempt to find the start location using trilateration
+    const startNode = trilateration(signalMap, userID, uwbDevices, rooms);
 
     if (!startNode) {
-        return res.status(404).send('Start location not found for given userID');
+        return res.status(404).send('Start location not found for given userID.');
     }
-    
+
     try {
-        const { shortestDistance, shortestPath } = tsp.findShortestRoute(graph, startNode, nodes); // Destructuring to get shortestPath and minWeight
+        const { shortestDistance, shortestPath } = tsp.findShortestRoute(graph, startNode, nodes);
+        sendMessageToDevice(userID, "fast"); // Utilize the updated sendMessageToDevice which uses userID to lookup device info
+
         res.status(200).json({ userID: userID, path: shortestPath, shortestDistance: shortestDistance });
+
+        const endNode = shortestPath[shortestPath.length - 1];
+        trackDeviceToEndNode(userID, endNode); // This function periodically checks the device's location and sends "slow" when it reaches endNode
+
     } catch (error) {
         res.status(500).send('Error calculating path: ' + error.message);
     }
 });
+
 
 // run this command in the directory with the minio executable to start the server: .\minio.exe server C:\minio --console-address :9090
 app.get('/rfid/:bucketName', async (req, res) => {
@@ -315,17 +342,23 @@ app.post('/send-message', (req, res) => {
     res.send({ status: 'Message sent to all clients' });
 });
 
+app.get('/api/popular-rooms', async (req, res) => {
+    try {
+        const popularRooms = await findPopularity();
+        res.json(popularRooms);
+    } catch (error) {
+        console.error('Error retrieving popular rooms:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 app.use('/rfid/:bucketName', (req, res, next) => {
     const bucketName = req.params.bucketName.trim();
-    if (!bucketAccessCounters[bucketName]) {
-        bucketAccessCounters[bucketName] = 0;
-    }
-    bucketAccessCounters[bucketName]++;
 
     // Persist the updated counter to InfluxDB
     const point = new Point('bucket_access')
         .tag('bucketName', bucketName)
-        .intField('count', bucketAccessCounters[bucketName]);
+        .intField('count', 1);
     writeApi.writePoint(point);
     writeApi.flush().catch(err => console.error('Error writing to InfluxDB', err));
 
@@ -363,6 +396,78 @@ function updateRoomOccupancy() {
     writeClient.flush().catch(err => console.error('Error writing data to InfluxDB', err));
 }
 
+function updateUserRoomDurations() {
+    const currentTime = Date.now(); // Current time in milliseconds
+
+    // Iterate through each user in the signal map
+    Object.keys(signalMap.userBeaconMap).forEach(userID => {
+        const currentRoom = trilateration(signalMap, userID, uwbDevices, rooms);
+
+        if (!userDeviceMap[userID]) {
+            // If this is the first time seeing this user, initialize their record
+            userDeviceMap[userID] = { currentRoom, entryTime: currentTime };
+        } else {
+            // If the user has moved to a different room or is being updated in the same room
+            const userData = userDeviceMap[userID];
+            if (currentRoom !== userData.currentRoom) {
+                // Calculate the duration of the previous room stay
+                const duration = currentTime - userData.entryTime; // Duration in milliseconds
+
+                // Here you can log the duration, user ID, and room to InfluxDB or another datastore
+                logRoomStayDuration(userID, userData.currentRoom, duration);
+
+                // Update the user's current room and reset the entry time
+                userData.currentRoom = currentRoom;
+                userData.entryTime = currentTime;
+            }
+            // If the user is still in the same room, no action is needed besides the continuous update
+        }
+    });
+}
+
+function logRoomStayDuration(userID, roomName, duration) {
+    const point = new Point('roomStayDuration')
+        .tag('userID', userID)
+        .tag('roomName', roomName)
+        .floatField('duration', duration / 1000); // Convert milliseconds to seconds
+    writeClient.writePoint(point);
+    writeClient.flush().catch(err => console.error('Error writing data to InfluxDB', err));
+}
+
+function trackDeviceToEndNode(userID, endNode) {
+    const checkInterval = setInterval(() => {
+        const currentNode = trilateration(signalMap, userID, uwbDevices, rooms); // Assume this function returns the current node for the user
+        if (currentNode === endNode) {
+            // Device has reached the endNode
+            sendMessageToDevice(userID, "slow"); // Directly use userID to send the message
+            clearInterval(checkInterval); 
+        }
+    }, 1000); // Check every 5 seconds
+}
+
+function sendMessageToDevice(userID, message) {
+    const deviceInfo = userDeviceMap[userID]; // Access the global mapping
+    if (deviceInfo) {
+        const messageBuffer = Buffer.from(message);
+        server.send(messageBuffer, 0, messageBuffer.length, deviceInfo.port, deviceInfo.ip, (err) => {
+            if (err) {
+                console.error(`Error sending message to ${deviceInfo.ip}:${deviceInfo.port}: ${err}`);
+            } else {
+                console.log(`Message "${message}" sent to ${deviceInfo.ip}:${deviceInfo.port}`);
+            }
+        });
+    } else {
+        console.log(`No device information found for userID ${userID}`);
+    }
+}
+
+
+
+
+
+//------------------------------------------------------------------------------------------------------------------
+//port establishment
+
 const port = parseInt(process.env.PORT) || 3000;
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
@@ -378,3 +483,119 @@ const PORT = 3333;
 server.bind(PORT);
 rfidServer.bind(3334);
 
+
+
+
+
+
+
+
+
+//---------------------------------------------------------------------------------
+//ML Functions / Data
+
+const visitCountWeight = 0.5;
+const visitDurationWeight = 0.5;
+
+async function findPopularity() {
+    const combinedData = await prepareDataForML();
+    const normalizedData = normalizeData(combinedData);
+
+    normalizedData.forEach(room => {
+        room.score = calculateWeightedScore(room);
+    });
+
+    normalizedData.sort((a, b) => b.score - a.score);
+    return normalizedData;
+}
+
+async function prepareDataForML() {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const startQueryTime = oneWeekAgo.toISOString();
+
+    // Flux query to fetch room visit counts for the last week
+    const visitCountQuery = flux`from(bucket: ${bucket})
+      |> range(start: ${startQueryTime})
+      |> filter(fn: (r) => r._measurement == "room_access")
+      |> sum(column: "_value")
+      |> group(columns: ["roomID"])`;
+
+    // Flux query to fetch average stay duration per room for the last week
+    const durationQuery = flux`from(bucket: ${bucket})
+      |> range(start: ${startQueryTime})
+      |> filter(fn: (r) => r._measurement == "roomStayDuration")
+      |> mean(column: "duration")
+      |> group(columns: ["roomName"])`;
+
+    try {
+        // Execute the visit count query
+        const visitCounts = {};
+        await queryApi.collectRows(visitCountQuery, {
+            next(row, tableMeta) {
+                const o = tableMeta.toObject(row);
+                visitCounts[o.roomID] = o._value;
+            },
+            error(error) {
+                console.error('Query for visitCounts failed', error);
+                throw error;
+            },
+        });
+
+        // Execute the duration query
+        const durations = {};
+        await queryApi.collectRows(durationQuery, {
+            next(row, tableMeta) {
+                const o = tableMeta.toObject(row);
+                durations[o.roomName] = o._value;
+            },
+            error(error) {
+                console.error('Query for durations failed', error);
+                throw error;
+            },
+        });
+
+        // Combine data into a single structure for ML processing
+        const combinedData = Object.keys(visitCounts).map(roomID => {
+            return {
+                roomID: roomID,
+                visitCount: visitCounts[roomID],
+                averageDuration: durations[roomID] || 0, // Handle cases where there might be no duration data
+            };
+        });
+
+        return combinedData;
+    } catch (error) {
+        console.error('Failed to prepare data for ML', error);
+        throw error;
+    }
+}
+
+function normalizeData(data) {
+    let visitCounts = data.map(room => room.visitCount);
+    let durations = data.map(room => room.averageDuration);
+
+    let { min: minVisitCount, max: maxVisitCount } = findMinMax(visitCounts);
+    let { min: minDuration, max: maxDuration } = findMinMax(durations);
+
+    data.forEach(room => {
+        room.normalizedVisitCount = (room.visitCount - minVisitCount) / (maxVisitCount - minVisitCount);
+        room.normalizedAverageDuration = (room.averageDuration - minDuration) / (maxDuration - minDuration);
+    });
+
+    return data;
+}
+
+const findMinMax = (arr) => {
+    let min = arr[0], max = arr[0];
+    for (let i = 1; i < arr.length; i++) {
+        if (arr[i] > max) max = arr[i];
+        if (arr[i] < min) min = arr[i];
+    }
+    return { min, max };
+};
+
+function calculateWeightedScore(room) {
+    const score = (visitCountWeight * room.visitCount) + (visitDurationWeight * room.averageDuration);
+    return score;
+}
