@@ -27,9 +27,9 @@ const RFIDScreen = ({ route }) => {
     const [isApiResponseVisible, setIsApiResponseVisible] = useState(false);
     const [selectedPrompt, setSelectedPrompt] = useState('');
     const [isPromptPickerVisible, setIsPromptPickerVisible] = useState(false);
-    const promptLabels = ["Artist", "Style", "Time Period"];
-    const serverIP=''
-    const myIP=''
+    const promptLabels = ["Artist", "Style", "Visit Stats"];
+    const serverIP='10.239.213.248'
+    const myIP='10.239.207.131'
 
    // Text-to-Speech function
    const speak = (text, languageCode) => {
@@ -136,7 +136,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
     };
 
     const sendPromptToGolangAPI = async (prompt) => {
-        const golangAPIEndpoint = `http:/${myIP}:4040/chat`; // Replace with your GoLang API URL
+        const golangAPIEndpoint = `http:/10.239.207.131:4040/chat`; // Replace with your GoLang API URL
         setIsLoadingApiResponse(true); // Start loading
         try {
             const response = await axios.post(golangAPIEndpoint, { prompt: prompt });
