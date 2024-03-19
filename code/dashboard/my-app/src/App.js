@@ -7,6 +7,7 @@ import { ConfigProvider } from 'antd';
 import PopularExhibits from './components/MainScreen/PopExh/PopularExhibits';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import RoomOverview from './components/RoomScreen/RoomOverview';
+import Menubar from './components/Menubar';
 let mockData={
   "exhibitOverview": {
     "activeUsers": 534,
@@ -45,6 +46,7 @@ function App() {
             <Sidebar />
           </div>
           <div className="main-content">
+        <Menubar/>
             <Routes>
               <Route path="/" element={
                 <>
@@ -53,10 +55,10 @@ function App() {
                       <ExhibitOverview data={mockData.exhibitOverview} />
                     </div>
                     <div className="right-panel">
-                      <VisitorFeedLink />
-                      <div className="right-sub">
-                        <PopularExhibits />
+                      <div className="visitor-feed-link">
+                        <VisitorFeedLink />
                       </div>
+                      <PopularExhibits />
                     </div>
                   </div>
                   <div className='RoomCapacityChart'>

@@ -14,7 +14,7 @@ const VisitorFeedLink=()=>{
 const title='Visitor Feedback'
     return(
 <BackCard>
-    <CardTitle text={title}/>
+    <CardTitle style={{display:'flex', marginTop:'10px', marginLeft:'0px'}}text={title}/>
     <ViewAll onClick={handleButtonClick} />
 </BackCard>
     )

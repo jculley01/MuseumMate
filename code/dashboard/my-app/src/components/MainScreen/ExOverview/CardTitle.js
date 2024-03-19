@@ -7,8 +7,8 @@ const styles = {
     fontFamily: 'Source Sans Pro',
     fontWeight: 600,
     lineHeight: '32px',
-    marginLeft: '90px',
-    marginTop: '10px',
+    marginLeft: '20px',
+    marginTop: '20px',
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -18,10 +18,12 @@ const defaultProps = {
   text: 'Exhibit Overview',
 };
 
-const CardTitle = (props) => {
+const CardTitle = ({ text, style }) => {
+  const combinedStyles = { ...styles.Text, ...style };
+  
   return (
-    <div style={styles.Text}>
-      {props.text ?? defaultProps.text}
+    <div style={combinedStyles}>
+      {text ?? defaultProps.text}
     </div>
   );
 };

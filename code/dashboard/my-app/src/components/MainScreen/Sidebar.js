@@ -69,6 +69,8 @@ const Sidebar = () => {
           type="primary"
           onClick={toggleCollapsed}
           style={{
+            height:'64px',
+            width:'100%',
             marginBottom: 16,
           }}
         >

@@ -1,5 +1,9 @@
+
+/* In your CSS/SCSS file */
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap');
+
 .App {
-  font-family: 'Arial', sans-serif;
+  font-family: 'Source Sans Pro', sans-serif;
   background-color: #DEEDF7;
   padding: 0.125rem;
   display: flex;
@@ -52,7 +56,7 @@
   background-color: #ffffff;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
   flex: 1;
   /* Ensures this panel is smaller than the left panel */
   display: flex;
@@ -64,20 +68,9 @@
   height: min-content;
 }
 
-.right-sub{
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  flex: 1;
-  /* Ensures this panel is smaller than the left panel */
-  display: flex;
-  /* Enables internal flex layout for vertical alignment */
-  flex-direction: column;
-  /* Stacks children vertically */
-  justify-content: space-between;
-  /* Separates the children within the panel */
-  height: min-content;
+/* If you need spacing between VisitorFeedLink and PopularExhibits, you can add a class */
+.visitor-feed-link {
+  margin-bottom: 20px; /* Adjust the value as needed */
 }
 
 .RoomCapacityChart {

@@ -50,33 +50,33 @@ const data = [
 ];
 
 const PopularExhibits = () => {
-    return (
-        <div>
-          <h2>Popular exhibits</h2>
-          <List
-            itemLayout="horizontal"
-            dataSource={data}
-            pagination={{
-              pageSize: 4, // Adjust the number of items per page if needed
-            }}
-            renderItem={item => (
-              <List.Item
-                actions={[<Button type="primary">Monitor</Button>]}
-              >
-                <List.Item.Meta
-                  avatar={<Avatar src={item.avatar} />}
-                  title={item.title}
-                  description={
-                    <Tag color={item.popularity === 'High' ? 'green' : 'volcano'}>
-                      {item.popularity}
-                    </Tag>
-                  }
-                />
-              </List.Item>
-            )}
-          />
-        </div>
-      );
-    };
+  return (
+    <div style={{ backgroundColor: '#f0f2f5', borderRadius: '15px', padding: '16px' }}> {/* This div includes the header in the background */}
+      <h2>Popular exhibits</h2>
+      <List
+        itemLayout="horizontal"
+        dataSource={data}
+        pagination={{
+          pageSize: 4, // Adjust the number of items per page if needed
+        }}
+        renderItem={item => (
+          <List.Item
+            actions={[<Button type="primary">Monitor</Button>]}
+          >
+            <List.Item.Meta
+              avatar={<Avatar src={item.avatar} />}
+              title={item.title}
+              description={
+                <Tag color={item.popularity === 'High' ? 'green' : 'volcano'}>
+                  {item.popularity}
+                </Tag>
+              }
+            />
+          </List.Item>
+        )}
+      />
+    </div>
+  );
+};
 
 export default PopularExhibits;

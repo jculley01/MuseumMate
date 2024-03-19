@@ -4,7 +4,7 @@ const styles = {
   Text: {
     display:'flex',
     color: '#030303',
-    fontSize: '15px',
+    fontSize: '18px',
     fontFamily: 'Source Sans Pro',
     fontWeight: 600,
     lineHeight: '24px',
