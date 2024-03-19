@@ -34,9 +34,6 @@ function getThreeClosestUWBs(userSignalData, uwbDevices) {
 
 
 function trilaterate(point1, point2, point3) {
-    console.log("point1: ",point1);
-    console.log("point2: ", point2);
-    console.log("point3: ", point3);
     const xa = point1.coordinates.x;
     const ya = point1.coordinates.y;
     const xb = point2.coordinates.x;
@@ -51,8 +48,6 @@ function trilaterate(point1, point2, point3) {
     const T = (Math.pow(xa, 2.) - Math.pow(xb, 2.) + Math.pow(ya, 2.) - Math.pow(yb, 2.) + Math.pow(rb, 2.) - Math.pow(ra, 2.)) / 2.0;
     const y = ((T * (xb - xc)) - (S * (xb - xa))) / (((ya - yb) * (xb - xc)) - ((yc - yb) * (xb - xa)));
     const x = ((y * (ya - yb)) - T) / (xb - xa);
-    console.log("x: ", x);
-    console.log("y: ", y);
     return { x, y };
 }
 

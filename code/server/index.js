@@ -17,6 +17,7 @@ const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
 const messageWss = new WebSocket.Server({ port: 6060 });
 const Minio = require('minio');
+const dynamicPollPort = 3335;
 
 const signalMap = new SignalMap();
 const token = 'ZqbPr-oJgMnp1IfrSMuks9klMNepcVuWSerh2OEoMv9R5OOFw1DEZY82JsB6kPL5TYFrXbMsukYYkS0a8DAHww==';
@@ -188,6 +189,15 @@ setInterval(() => {
     console.log(`The predicted location is: `, trilateration(signalMap, 1, uwbDevices, rooms));
 }, 10000)
 
+let valueToSend = 0;
+
+setInterval(() => {
+    sendMessageToDevice(1, `${valueToSend}`);
+    // Flip the value between 0 and 1 for the next send
+    valueToSend = 1 - valueToSend;
+}, 20000);
+
+
 setInterval(() => {
     updateRoomOccupancy();
     updateUserRoomDurations();
@@ -242,7 +252,7 @@ app.get('/path/:userID', (req, res) => {
 
     if (path) {
         // Now using userID directly, assuming sendMessageToDevice handles looking up the user's device info
-        sendMessageToDevice(userID, "fast");
+        sendMessageToDevice(userID, "1");
         res.status(200).json({ userID: userID, path: path });
         // Tracking the device's movement towards the end node in the background
         trackDeviceToEndNode(userID, endNode);
@@ -278,7 +288,7 @@ app.post('/tsp-path', (req, res) => {
 
     try {
         const { shortestDistance, shortestPath } = tsp.findShortestRoute(graph, startNode, nodes);
-        sendMessageToDevice(userID, "fast"); // Utilize the updated sendMessageToDevice which uses userID to lookup device info
+        sendMessageToDevice(userID, "1"); // Utilize the updated sendMessageToDevice which uses userID to lookup device info
 
         res.status(200).json({ userID: userID, path: shortestPath, shortestDistance: shortestDistance });
 
@@ -384,6 +394,11 @@ function updateRoomOccupancy() {
         }
     });
 
+    // Print the room occupancy counts
+    Object.entries(roomCounts).forEach(([roomName, count]) => {
+        console.log(`Room: ${roomName}, Occupancy: ${count}`);
+    });
+
     // Write the room occupancy counts to InfluxDB
     Object.entries(roomCounts).forEach(([roomName, count]) => {
         const point = new Point('roomOccupancy')
@@ -396,50 +411,75 @@ function updateRoomOccupancy() {
     writeClient.flush().catch(err => console.error('Error writing data to InfluxDB', err));
 }
 
+
+// Assuming this structure exists globally or is initialized somewhere relevant in your application.
+let userRoomDurationsMap = {};
+
 function updateUserRoomDurations() {
-    const currentTime = Date.now(); // Current time in milliseconds
+    const currentTime = Date.now();
+    console.log(`Current Time: ${currentTime}`);
 
-    // Iterate through each user in the signal map
     Object.keys(signalMap.userBeaconMap).forEach(userID => {
+        console.log(`Processing User ID: ${userID}`);
         const currentRoom = trilateration(signalMap, userID, uwbDevices, rooms);
+        console.log(`Current Room for User ${userID}: ${currentRoom}`);
 
-        if (!userDeviceMap[userID]) {
-            // If this is the first time seeing this user, initialize their record
-            userDeviceMap[userID] = { currentRoom, entryTime: currentTime };
+        // Use the dedicated map for room duration tracking
+        if (!userRoomDurationsMap[userID]) {
+            console.log(`Initializing record for User ${userID}`);
+            userRoomDurationsMap[userID] = { currentRoom, entryTime: currentTime };
         } else {
-            // If the user has moved to a different room or is being updated in the same room
-            const userData = userDeviceMap[userID];
-            if (currentRoom !== userData.currentRoom) {
-                // Calculate the duration of the previous room stay
-                const duration = currentTime - userData.entryTime; // Duration in milliseconds
+            const userData = userRoomDurationsMap[userID];
+            console.log("userData: ", userData);
+            console.log(`User ${userID} was previously in room: ${userData.currentRoom}`);
 
-                // Here you can log the duration, user ID, and room to InfluxDB or another datastore
-                logRoomStayDuration(userID, userData.currentRoom, duration);
+            if (currentRoom !== userData.currentRoom) {
+                const duration = currentTime - userData.entryTime;
+                console.log(`User ${userID} moved to a new room. Duration in previous room: ${duration}ms`);
+
+                if (userData.currentRoom) { // Ensure the previous room is not undefined
+                    logRoomStayDuration(userID, userData.currentRoom, duration);
+                }
 
                 // Update the user's current room and reset the entry time
                 userData.currentRoom = currentRoom;
                 userData.entryTime = currentTime;
+            } else {
+                console.log(`User ${userID} is still in the same room: ${currentRoom}. No action needed.`);
             }
-            // If the user is still in the same room, no action is needed besides the continuous update
         }
     });
 }
 
 function logRoomStayDuration(userID, roomName, duration) {
+    const durationInSeconds = duration / 1000;
+    console.log(`Logging duration for User ${userID} in room ${roomName}. Duration: ${durationInSeconds} seconds`);
+
+    if (isNaN(durationInSeconds)) {
+        console.error(`Error: duration is NaN for userID ${userID} in room ${roomName}. Skipping log.`);
+        return; // Skip logging this point
+    }
+
     const point = new Point('roomStayDuration')
         .tag('userID', userID)
         .tag('roomName', roomName)
-        .floatField('duration', duration / 1000); // Convert milliseconds to seconds
+        .floatField('duration', durationInSeconds);
+    console.log(`Point to be written for User ${userID}:`, JSON.stringify(point)); // Assuming JSON.stringify is illustrative
+
     writeClient.writePoint(point);
-    writeClient.flush().catch(err => console.error('Error writing data to InfluxDB', err));
+    writeClient.flush().catch(err => console.error('Error writing data to InfluxDB:', err));
 }
+
+
+
+
 
 function trackDeviceToEndNode(userID, endNode) {
     const checkInterval = setInterval(() => {
         const currentNode = trilateration(signalMap, userID, uwbDevices, rooms); // Assume this function returns the current node for the user
         if (currentNode === endNode) {
             // Device has reached the endNode
-            sendMessageToDevice(userID, "slow"); // Directly use userID to send the message
+            sendMessageToDevice(userID, "0"); // Directly use userID to send the message
             clearInterval(checkInterval); 
         }
     }, 1000); // Check every 5 seconds
@@ -449,11 +489,11 @@ function sendMessageToDevice(userID, message) {
     const deviceInfo = userDeviceMap[userID]; // Access the global mapping
     if (deviceInfo) {
         const messageBuffer = Buffer.from(message);
-        server.send(messageBuffer, 0, messageBuffer.length, deviceInfo.port, deviceInfo.ip, (err) => {
+        server.send(messageBuffer, 0, messageBuffer.length, dynamicPollPort, deviceInfo.ip, (err) => {
             if (err) {
-                console.error(`Error sending message to ${deviceInfo.ip}:${deviceInfo.port}: ${err}`);
+                console.error(`Error sending message to ${deviceInfo.ip}:${dynamicPollPort}: ${err}`);
             } else {
-                console.log(`Message "${message}" sent to ${deviceInfo.ip}:${deviceInfo.port}`);
+                console.log(`Message "${message}" sent to ${deviceInfo.ip}:${dynamicPollPort}`);
             }
         });
     } else {
