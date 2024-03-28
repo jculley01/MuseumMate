@@ -1,5 +1,6 @@
 import React from 'react';
 import { Table, Tag, Badge } from 'antd';
+import '../../App.css'; 
 
 // Define the columns based on the provided image.
 const columns = [
@@ -71,6 +72,6 @@ const data = [
   },
 ];
 
-const ExhibitTable = () => <Table columns={columns} dataSource={data} pagination={false} />;
+const ExhibitTable = () => <Table className="rounded-table" columns={columns} dataSource={data} pagination={false} />;
 
 export default ExhibitTable;

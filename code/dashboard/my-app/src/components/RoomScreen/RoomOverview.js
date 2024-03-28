@@ -4,12 +4,18 @@ import IconButton from './IconButton';
 import { DownOutlined } from '@ant-design/icons';
 import ListGraphCont from './ListGraphCont';
 import ExhibitTable from './ExhibitTable';
+import RoomLabel from './Roomlabel';
 
 const overviewStyle = {
   backgroundColor: '#f0f0f0', // Replace with the actual background color from your image
   padding: '20px',
   borderRadius: '8px',
-  marginBottom:'20px'
+  marginBottom:'20px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.4)',
+  borderRadius: '24px', // Rounded edges
+  marginLeft:'1.25rem',
+  width: '95.5%',
+  marginTop:'20px',
 };
 
 const cardStyle = {
@@ -40,6 +46,10 @@ const menu = (
 );
 
 const RoomOverview = () => (
+  <div>
+    <div>
+    <RoomLabel text="Room 2.1"/>
+  </div>
   <div>
     <div style={overviewStyle} className='overview'>
     <Row style={{ marginBottom: '10px' }}>
@@ -83,13 +93,30 @@ const RoomOverview = () => (
       </Col>
     </Row>
     </div>
-      <div className='graph'>
+      <div className='graph'
+    style={{
+    backgroundColor:'#f0f0f0', 
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.4)',
+    borderRadius: '24px', // Rounded edges
+    marginLeft:'1.25rem',
+    width:'97.5%'
+    }}>
       <ListGraphCont/>
       </div>
-      <div className='row3'>
+      <div className='row3'   
+    style={{
+    backgroundColor:'#f0f0f0', 
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.4)',
+    borderRadius: '24px', // Rounded edges
+    marginLeft:'1.25rem',
+    marginTop:'20px',
+    width:'97.5%'
+    }}>
         <ExhibitTable/>
       </div>
   </div>
+  </div>
+  
 
   
   

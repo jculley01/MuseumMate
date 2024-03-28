@@ -10,6 +10,9 @@ const data = [
   'Portrait of T.Little',
   'Last Supper'
 ];
+const listStyle = {
+  backgroundColor: '#f2f2f2', // Replace with your desired background color
+};
 
 const ListComponent = () => (
   <List
@@ -17,7 +20,8 @@ const ListComponent = () => (
     header={<h3>Top Exhibits</h3>}
     bordered
     dataSource={data}
-    renderItem={item => <List.Item>{item}</List.Item>}
+    renderItem={item => <List.Item style={listStyle}>{item}</List.Item>}
+    style={listStyle} // Applying the style to the List component itself
   />
 );
 
@@ -27,7 +31,7 @@ const ListGraphCont = () => (
       <CapacityLine />
     </Col>
     <Col span={8}>
-      <Card>
+      <Card style={{backgroundColor:'#f2f2f2', marginLeft:'3.75rem', width:'85%'}}>
         <ListComponent />
       </Card>
     </Col>

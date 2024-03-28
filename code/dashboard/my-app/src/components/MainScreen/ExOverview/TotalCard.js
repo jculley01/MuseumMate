@@ -5,12 +5,12 @@ const styles = {
     position: 'absolute',
     right: '0', 
     top: '0', 
-    width: '25rem',
+    width: '60%',
     height: '7rem', 
     backgroundColor: '#f0f0f0', // Your specified background
     borderRadius: '24px',
     marginTop: '5px',
-    marginRight: '2.1875rem'
+    marginRight: '1.59rem'
   },
 };
 

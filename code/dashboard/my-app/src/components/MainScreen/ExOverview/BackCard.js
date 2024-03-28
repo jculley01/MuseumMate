@@ -10,7 +10,8 @@ const styles = {
     borderRadius: '24px',
     alignItems: 'center',
     justifyContent: 'center', 
-    marginLeft: '0px'
+    marginLeft: '0px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.4)',
   },
 };
 

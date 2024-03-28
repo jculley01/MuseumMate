@@ -2,15 +2,20 @@
 /* In your CSS/SCSS file */
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap');
 
+html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* This ensures that the body doesn't create extra space */
+}
 .App {
   font-family: 'Source Sans Pro', sans-serif;
-  background-color: #DEEDF7;
+  background-color: #dfdff7;
   padding: 0.125rem;
   display: flex;
   flex-direction: row;
-  align-items: center;
   height: 100vh; 
-   overflow: hidden;
+   overflow: auto;
   /* Centers the content */
   margin: 0;
 }
@@ -21,13 +26,13 @@
   flex-direction: column;
   height: 100%; /* Full height */
   background-color: #ffffff; /* Adjust color as needed */
-  overflow: auto; /* Scrollbar if content overflows */
+ 
 }
 
 .main-content {
   margin-left: 0.3125rem;
   flex-grow: 1;
-  overflow: auto; /* Scrollbar if content overflows */
+  overflow: auto; 
 }
 
 
@@ -36,16 +41,15 @@
   justify-content: space-between;
   margin-bottom: 20px;
   width: 100%;
-  /* Adjust this based on your design requirements */
-  max-width: 75rem;
+
+  max-width: 109rem;
   /* Prevents the panels from stretching too much on wider screens */
 }
 
 .left-panel {
-  background-color: #ffffff;
+  background-color: #ffffff00;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   flex: 2;
   /* Adjust the flex ratio based on your design */
   margin-right: 20px;
@@ -53,7 +57,7 @@
 }
 
 .right-panel {
-  background-color: #ffffff;
+  background-color: #ffffff00;
   padding: 20px;
   border-radius: 10px;
   /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
@@ -74,13 +78,15 @@
 }
 
 .RoomCapacityChart {
-    top: -17.6875rem;
+    top: -19.6875rem;
     left: 0px;
-    width: 48.5rem;
+    width: 55vw;
     position: relative;
-    height: 25rem;
-    background-color: rgb(240, 240, 240);
+    display: flex;
+    height: 30rem;
+    background-color: rgba(255, 255, 255, 0);
     border-radius: 24px;
+    margin-left: 20px;
 }
 
 .App-logo {
@@ -116,4 +122,13 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.rounded-table .ant-table {
+  border-radius: 16px; /* This value is quite large and will create a very rounded effect */
+  overflow: hidden; /* This ensures the inner content respects the border radius */
+}
+
+.rounded-table .ant-table-container {
+  border-radius: 16px; /* Apply the same border-radius to the container for consistency */
 }

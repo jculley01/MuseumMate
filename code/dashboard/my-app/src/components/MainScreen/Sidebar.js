@@ -22,7 +22,7 @@ function getItem(label, key, icon, children, type, onClick) {
 }
 
 const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const navigate = useNavigate(); // Initialize useNavigate hook
 
   // Handler for toggle collapsed state
@@ -45,6 +45,7 @@ const Sidebar = () => {
     width: collapsed ? '80px' : '256px', // Adjust the width as per your design
     height: '100vh', // Full viewport height
     transition: 'width 0.2s', // Smooth transition for the collapsing action
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.4)'
   };
 
   const onMenuItemClick = (e) => {

@@ -8,6 +8,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { AntDesign } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
+import { Rating } from 'react-native-ratings';
+import { Feather } from '@expo/vector-icons';
 
 
 
@@ -28,22 +30,23 @@ const RFIDScreen = ({ route }) => {
     const [selectedPrompt, setSelectedPrompt] = useState('');
     const [isPromptPickerVisible, setIsPromptPickerVisible] = useState(false);
     const promptLabels = ["Artist", "Style", "Visit Stats"];
-    const serverIP='10.239.213.248'
-    const myIP='10.239.207.131'
+    const serverIP='128.197.53.112'
+    const myIP='10.239.249.115'
+    const isSpeaking = Speech.isSpeakingAsync();
+    const [isRatingVisible, setIsRatingVisible] = useState(false);
 
-   // Text-to-Speech function
-   const speak = (text, languageCode) => {
-    const speechLanguage = convertToSpeechLanguageCode(languageCode);
-    Speech.stop(); // Stop any previous speech
 
-    // Determine the content to speak: use API response if visible, else use the item description or translated text
-    const contentToSpeak = isApiResponseVisible ? apiResponse : (translatedText || text);
-
-    Speech.speak(contentToSpeak, {
-        language: speechLanguage,
-    });
-};
-
+    const toggleSpeak = async (text, languageCode) => {
+        const speaking = await Speech.isSpeakingAsync();
+        if (speaking) {
+            Speech.stop(); // If speech is active, stop it
+        } else {
+            // If not speaking, start speaking the given text
+            const speechLanguage = convertToSpeechLanguageCode(languageCode);
+            const contentToSpeak = isApiResponseVisible ? apiResponse : (translatedText || text);
+            Speech.speak(contentToSpeak, { language: speechLanguage });
+        }
+    };
 
 // Function to convert Google Translate API language codes to Expo Speech format
 const convertToSpeechLanguageCode = (languageCode) => {
@@ -136,7 +139,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
     };
 
     const sendPromptToGolangAPI = async (prompt) => {
-        const golangAPIEndpoint = `http:/10.239.207.131:4040/chat`; // Replace with your GoLang API URL
+        const golangAPIEndpoint = `http:/${myIP}:4040/chat`; // Replace with your GoLang API URL
         setIsLoadingApiResponse(true); // Start loading
         try {
             const response = await axios.post(golangAPIEndpoint, { prompt: prompt });
@@ -168,7 +171,7 @@ const convertToSpeechLanguageCode = (languageCode) => {
 
     const fetchObjectData = async (RFID) => {
         try {
-            const response = await fetch(`http://${serverIP}:3000/rfid/museummate0001`);
+            const response = await fetch(`http://${serverIP}:3000/rfid/${RFID}`);
            // console.log('rfid response:', response);
     
             if (!response.ok) {
@@ -226,6 +229,12 @@ const convertToSpeechLanguageCode = (languageCode) => {
         return <Text>No access to camera</Text>;
     }
 
+
+    const toggleRatingVisibility = () => {
+        setIsRatingVisible(!isRatingVisible);
+    };
+    
+
     return (
         <View style={styles.container}>
             <Camera style={styles.camera} type={Camera.Constants.Type.back}>
@@ -276,9 +285,9 @@ const convertToSpeechLanguageCode = (languageCode) => {
 
                         {/* Speak button */}
                         <TouchableOpacity
-                                style={styles.speakButton}
-                                onPress={() => speak(item.description, selectedLanguage)}
-                            >
+                            style={styles.speakButton}
+                            onPress={() => toggleSpeak(item.description, selectedLanguage)}
+                        >
                                 <AntDesign name="sound" size={24} color="white" />
                             </TouchableOpacity>
 
@@ -292,8 +301,31 @@ const convertToSpeechLanguageCode = (languageCode) => {
                         >
                             <Entypo name="info" size={24} color="white" />
                         </TouchableOpacity>
-
+                        <TouchableOpacity
+                onPress={() => setIsRatingVisible(!isRatingVisible)} // Toggle the visibility of the rating component
+                style={styles.apiButton}
+            >
+                <Entypo name="star-outlined" size={24} color="white" />
+            </TouchableOpacity>
                     </View>
+                    {isRatingVisible && (
+                            <View style={styles.ratingContainer}>
+                                <Rating
+                                    showRating
+                                    onFinishRating={(rating) => console.log('Rated with: ', rating)} // Temporarily log the rating, adjust as needed
+                                    style={{ paddingVertical: 10 }}
+                                    imageSize={30}
+                                    startingValue={0}
+                                    fractions={1}
+                                />
+                                <TouchableOpacity
+                                    onPress={() => {setIsRatingVisible(false)}}
+                                    style={styles.sendButton} // Apply your button styling here
+                                >
+                                    <Feather name="send" size={24} color="white" />
+                                </TouchableOpacity>
+                            </View>
+                        )}
                 </View>
                 ))}
             </Camera>
@@ -574,6 +606,26 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,255,255,0.7)', // Semi-transparent background
         zIndex: 1,
     },
+    ratingContainer: {
+        flexDirection: 'row', // Arrange Rating and Send button in a row
+        alignItems: 'center', // Vertically center the items
+        justifyContent: 'center', // Horizontally center the items
+        marginTop: 10,
+        // Adjust padding and margins as needed
+    },
+    sendButton: {
+        backgroundColor: '#7574da', // Example button color, adjust as needed
+        marginLeft: 10, // Spacing between the rating component and the Send button
+        paddingHorizontal: 8, // Horizontal padding
+        paddingVertical: 8, // Vertical padding
+        borderRadius: 5, // Rounded corners
+        // Additional button styling
+    },
+    sendButtonText: {
+        color: 'white', // Text color
+        // Additional text styling
+    },
+    
     
     
 });

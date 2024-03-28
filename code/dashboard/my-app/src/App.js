@@ -8,6 +8,7 @@ import PopularExhibits from './components/MainScreen/PopExh/PopularExhibits';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import RoomOverview from './components/RoomScreen/RoomOverview';
 import Menubar from './components/Menubar';
+import AdminBar from './components/MainScreen/Adminbar';
 let mockData={
   "exhibitOverview": {
     "activeUsers": 534,
@@ -50,6 +51,7 @@ function App() {
             <Routes>
               <Route path="/" element={
                 <>
+                <AdminBar/>
                   <div className="top-section">
                     <div className="left-panel">
                       <ExhibitOverview data={mockData.exhibitOverview} />

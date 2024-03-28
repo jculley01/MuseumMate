@@ -22,7 +22,7 @@ class CapacityLine extends React.Component {
             show: false
           }
         },
-        colors: ['#77B6EA'],
+        colors: ['#5856d6'],
         dataLabels: {
           enabled: true,
         },
@@ -34,9 +34,9 @@ class CapacityLine extends React.Component {
           align: 'left'
         },
         grid: {
-          borderColor: '#e7e7e7',
+          borderColor: '#757575',
           row: {
-            colors: ['#f3f3f3', 'transparent'], 
+            colors: ['#ffffff', 'transparent'], 
             opacity: 0.5
           },
         },
@@ -47,7 +47,7 @@ class CapacityLine extends React.Component {
           }
         },
         xaxis: {
-          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], // Adjust categories according to your data
+          categories: ['8am', '10am', '12pm', '2pm', '4pm', '6pm', '8pm'], // Adjust categories according to your data
         },
         yaxis: {
           // Adjust according to your data

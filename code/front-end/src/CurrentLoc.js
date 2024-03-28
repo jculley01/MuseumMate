@@ -14,7 +14,7 @@ function CurrentLoc({navigation, route }) {
   const { scannedValue } = route.params;
   const [imageNumber, setImageNumber] = useState(null);
   const [selectedRooms, setSelectedRooms] = useState({});
-  const serverIP='10.239.213.248'
+  const serverIP='128.197.53.112'
 
 
   const fetchData = async () => {

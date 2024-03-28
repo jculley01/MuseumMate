@@ -5,22 +5,23 @@ const styles = {
     cursor: 'pointer',
     top: '330px',
     left: '1144px',
-    width: '240px',
-    height: '36px',
+    width: '85%',
+    height: '3rem',
     padding: '0px 8px',
     border: '0',
     boxSizing: 'border-box',
     borderRadius: '24px',
     backgroundColor: '#5856d6',
     color: '#ffffff',
-    fontSize: '14px',
+    fontSize: '17px',
     fontFamily: 'Source Sans Pro',
     fontWeight: 700,
     lineHeight: '16px',
     outline: 'none',
     alignItems: 'center',
     justifyContent: 'center', 
-    marginLeft: '42px'
+    marginLeft: '42px',
+    marginTop:'-10px'
   },
 };
 

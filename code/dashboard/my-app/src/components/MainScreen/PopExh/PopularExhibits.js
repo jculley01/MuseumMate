@@ -51,7 +51,7 @@ const data = [
 
 const PopularExhibits = () => {
   return (
-    <div style={{ backgroundColor: '#f0f2f5', borderRadius: '15px', padding: '16px' }}> {/* This div includes the header in the background */}
+    <div style={{ backgroundColor: '#f0f2f5', borderRadius: '15px', padding: '16px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.4)' }}> 
       <h2>Popular exhibits</h2>
       <List
         itemLayout="horizontal"
