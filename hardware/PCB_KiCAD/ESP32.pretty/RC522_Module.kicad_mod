@@ -43,7 +43,7 @@
   (pad "6" thru_hole oval (at 3.810001 27.89 90) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask") (tstamp 067442a4-5bba-4fba-8538-cd60101b84d4))
   (pad "7" thru_hole oval (at 6.350001 27.89 90) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask") (tstamp a4a20636-440b-4fb9-9c0d-1773d354adf3))
   (pad "8" thru_hole oval (at 8.890001 27.89 90) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask") (tstamp a3732d2c-ad8c-4009-b7a6-1acbce6b3a60))
-  (zone (net 0) (net_name "") (layer "F.SilkS") (tstamp d66247c4-87e7-43c3-a9a0-d6ee04c347d3) (name "RFID_Reader") (hatch edge 0.5)
+  (zone (net 0) (net_name "") (layers "F&B.Cu" "*.SilkS") (tstamp d66247c4-87e7-43c3-a9a0-d6ee04c347d3) (name "RFID_Reader") (hatch edge 0.5)
     (connect_pads (clearance 0))
     (min_thickness 0.25) (filled_areas_thickness no)
     (keepout (tracks not_allowed) (vias not_allowed) (pads not_allowed) (copperpour allowed) (footprints allowed))
