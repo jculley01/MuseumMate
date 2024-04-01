@@ -54,6 +54,9 @@ const Sidebar = () => {
       case '1': // Overview
         navigate('/');
         break;
+      case '2': // Feedback
+        navigate('/feedback');
+        break;
       case '1.1': // Room 1.1
         navigate('/room-overview');
         break;

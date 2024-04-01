@@ -30,10 +30,12 @@ const RFIDScreen = ({ route }) => {
     const [selectedPrompt, setSelectedPrompt] = useState('');
     const [isPromptPickerVisible, setIsPromptPickerVisible] = useState(false);
     const promptLabels = ["Artist", "Style", "Visit Stats"];
-    const serverIP='128.197.53.112'
-    const myIP='10.239.249.115'
+    const serverIP='10.239.71.233'
+    const myIP='10.239.71.233'
     const isSpeaking = Speech.isSpeakingAsync();
     const [isRatingVisible, setIsRatingVisible] = useState(false);
+    const [wsMessage, setWsMessage] = useState('');
+
 
 
     const toggleSpeak = async (text, languageCode) => {
@@ -64,6 +66,33 @@ const convertToSpeechLanguageCode = (languageCode) => {
     };
     return codeMap[languageCode] || 'en-US'; // Default to 'en-US' if no mapping found
 };
+
+
+
+
+//Notifcation endpoint:
+useEffect(() => {
+    const wsUrl = `ws://${serverIP}:6060`;
+    const ws = new WebSocket(wsUrl);
+    ws.onopen = () => {
+        console.log('WebSocket connection Message established');
+    };
+    ws.onmessage = (e) => {
+        const message = JSON.parse(e.data);
+        console.log('Received message:', message);
+        setWsMessage(message.message); 
+    };
+    ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+    };
+    ws.onclose = () => {
+        console.log('WebSocket connection closed');
+    };
+    return () => {
+        ws.close();
+    };
+}, []); 
+
 
 
 
@@ -241,6 +270,8 @@ const convertToSpeechLanguageCode = (languageCode) => {
                 {/* Display the next step */}
                 <View style={styles.nextStepContainer}>
                     <Text style={styles.nextStepText}>Next Step: {getNextStep()}</Text>
+                    <Text>Received Message: {wsMessage}</Text>
+
                 </View>
     
                 {isLoadingApiResponse && (

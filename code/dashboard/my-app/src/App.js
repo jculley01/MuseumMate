@@ -9,6 +9,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import RoomOverview from './components/RoomScreen/RoomOverview';
 import Menubar from './components/Menubar';
 import AdminBar from './components/MainScreen/Adminbar';
+import RatingScreen from './components/RatingScreen/RatingScreen';
+
+
 let mockData={
   "exhibitOverview": {
     "activeUsers": 534,
@@ -68,6 +71,7 @@ function App() {
                   </div>
                 </>
               } />
+              <Route path="/feedback" element={<RatingScreen />} />
               <Route path="/room-overview" element={<RoomOverview />} />
             </Routes>
           </div>
