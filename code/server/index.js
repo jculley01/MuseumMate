@@ -3,6 +3,7 @@ const server = dgram.createSocket('udp4');
 const os = require('os');
 const rfidServer = dgram.createSocket('udp4');
 const express = require('express');
+const cors=require('cors')
 const fs = require('fs');
 const djikstra = require('./dijkstra');
 const tsp = require('./tsp');
@@ -25,6 +26,8 @@ const token = 'i8U3kPdqsPn-3SSuWsrydl9N8MeRy59JLJi-AcWJWYNzsO-jJQbrRnUK9at0snR31
 const url = 'http://localhost:8086';
 const client = new InfluxDB({ url, token });
 const app = express();
+app.use(cors())
+
 let org = `MuseumMate`;
 let bucket = `dashboard`;
 let writeClient = client.getWriteApi(org, bucket, 'ns');

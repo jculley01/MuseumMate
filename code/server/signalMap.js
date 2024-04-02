@@ -1,6 +1,6 @@
 const fs = require('fs');
 const { performance } = require('perf_hooks');
-
+const trilateration = require('./trilateration');
 class SignalMap {
     constructor() {
         this.userBeaconMap = {};
