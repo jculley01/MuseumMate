@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { performance } = require('perf_hooks');
 
 class SignalMap {
     constructor() {
@@ -77,51 +76,6 @@ class SignalMap {
             delete this.userBeaconMap[userID];
         }
     }
-
-    measureAndLogTrilaterationTimes(filename, signalMap, uwbDevices, rooms) {
-        const trilaterationTimes = [];
-        const totalUsers = Object.keys(this.userBeaconMap).length; // Total number of users
-
-        Object.keys(this.userBeaconMap).forEach(userID => {
-            const start = performance.now();
-            trilateration(signalMap, userID, uwbDevices, rooms); // Adjust based on actual function signature
-            const end = performance.now();
-            const executionTime = end - start;
-
-            trilaterationTimes.push({ userID, executionTime });
-        });
-
-        // Structuring log data
-        const logEntry = {
-            timestamp: new Date().toISOString(),
-            totalUsers,
-            trilaterationTimes
-        };
-
-        // Append the new execution times to the file
-        fs.readFile(filename, 'utf8', (err, data) => {
-            let currentData = [];
-            if (!err && data.length !== 0) {
-                try {
-                    currentData = JSON.parse(data);
-                } catch (parseErr) {
-                    console.error('Error parsing JSON from file:', parseErr);
-                    return;
-                }
-            }
-
-            currentData.push(logEntry); // Append the new log entry to the existing data
-
-            fs.writeFile(filename, JSON.stringify(currentData, null, 2), writeErr => {
-                if (writeErr) {
-                    console.error('Error writing to file:', writeErr);
-                } else {
-                    console.log(`Trilateration times logged successfully to ${filename}`);
-                }
-            });
-        });
-    }
-
 
     // Console logs all signals for debugging purposes
     printAllSignals() {

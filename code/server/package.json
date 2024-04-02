@@ -21,7 +21,6 @@
     "influx": "^5.9.3",
     "minio": "^7.1.3",
     "ml-knn": "^3.0.0",
-    "perf_hooks": "^0.0.1",
     "ws": "^8.14.2"
   },
   "devDependencies": {

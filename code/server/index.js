@@ -18,7 +18,6 @@ const wss = new WebSocket.Server({ port: 8080 });
 const messageWss = new WebSocket.Server({ port: 6060 });
 const Minio = require('minio');
 const dynamicPollPort = 3335;
-const { performance } = require('perf_hooks');
 
 const signalMap = new SignalMap();
 const token = 'ZqbPr-oJgMnp1IfrSMuks9klMNepcVuWSerh2OEoMv9R5OOFw1DEZY82JsB6kPL5TYFrXbMsukYYkS0a8DAHww==';
@@ -38,7 +37,6 @@ var minioClient = new Minio.Client({
 
 
 const COUNTERS_FILE = './bucketAccessCounters.json';
-const logFilename = 'trilateration_times.json';
 
 let bucketAccessCounters = {};
 try {
@@ -198,10 +196,6 @@ setInterval(() => {
     // Flip the value between 0 and 1 for the next send
     valueToSend = 1 - valueToSend;
 }, 20000);
-
-setInterval(() => {
-    signalMap.measureAndLogTrilaterationTimes(logFilename, signalMap, uwbDevices, rooms);
-}, 10000); // Adjust the interval as needed
 
 
 setInterval(() => {
@@ -384,14 +378,6 @@ app.use('/rfid/:bucketName', (req, res, next) => {
 
 //------------------------------------------------------------------------------------------------------------------
 //functions
-
-const measureTrilaterationTime = (signalMap, userID, uwbDevices, rooms) => {
-    const start = performance.now();
-    trilateration(signalMap, userID, uwbDevices, rooms); // Call your function
-    const end = performance.now();
-    return end - start; // Returns execution time in milliseconds
-};
-
 function updateRoomOccupancy() {
     const roomCounts = {}; // Object to store the count of users in each room
 
