@@ -21,19 +21,19 @@ const dynamicPollPort = 3335;
 const { performance } = require('perf_hooks');
 
 const signalMap = new SignalMap();
-const token = 'ZqbPr-oJgMnp1IfrSMuks9klMNepcVuWSerh2OEoMv9R5OOFw1DEZY82JsB6kPL5TYFrXbMsukYYkS0a8DAHww==';
+const token = 'i8U3kPdqsPn-3SSuWsrydl9N8MeRy59JLJi-AcWJWYNzsO-jJQbrRnUK9at0snR31jHngUcXc7Dc_T1q6Q-mvg=='
 const url = 'http://localhost:8086';
 const client = new InfluxDB({ url, token });
 const app = express();
-let org = `API-Observability`;
+let org = `MuseumMate`;
 let bucket = `dashboard`;
 let writeClient = client.getWriteApi(org, bucket, 'ns');
 var minioClient = new Minio.Client({
     endPoint: 'localhost',
     port: 9000,
     useSSL: false,
-    accessKey: 'Fzmxk29NK7mhfEsEQ7l5',
-    secretKey: 'lTpuETaLkJawA0FziIeDeGxZnvrKKalDnO5fu9iT',
+    accessKey: 'alojQRohuxxFCNVsR6pT',
+    secretKey: 'Qs5L00z0jMyy3TXbIzv4ZmVz36zhwjyur00mvL89',
 })
 
 
