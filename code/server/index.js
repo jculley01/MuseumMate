@@ -3,6 +3,7 @@ const server = dgram.createSocket('udp4');
 const os = require('os');
 const rfidServer = dgram.createSocket('udp4');
 const express = require('express');
+const cors=require('cors')
 const fs = require('fs');
 const djikstra = require('./dijkstra');
 const tsp = require('./tsp');
@@ -18,25 +19,29 @@ const wss = new WebSocket.Server({ port: 8080 });
 const messageWss = new WebSocket.Server({ port: 6060 });
 const Minio = require('minio');
 const dynamicPollPort = 3335;
+const { performance } = require('perf_hooks');
 
 const signalMap = new SignalMap();
-const token = 'ZqbPr-oJgMnp1IfrSMuks9klMNepcVuWSerh2OEoMv9R5OOFw1DEZY82JsB6kPL5TYFrXbMsukYYkS0a8DAHww==';
+const token = 'i8U3kPdqsPn-3SSuWsrydl9N8MeRy59JLJi-AcWJWYNzsO-jJQbrRnUK9at0snR31jHngUcXc7Dc_T1q6Q-mvg=='
 const url = 'http://localhost:8086';
 const client = new InfluxDB({ url, token });
 const app = express();
-let org = `API-Observability`;
+app.use(cors())
+
+let org = `MuseumMate`;
 let bucket = `dashboard`;
 let writeClient = client.getWriteApi(org, bucket, 'ns');
 var minioClient = new Minio.Client({
     endPoint: 'localhost',
     port: 9000,
     useSSL: false,
-    accessKey: 'Fzmxk29NK7mhfEsEQ7l5',
-    secretKey: 'lTpuETaLkJawA0FziIeDeGxZnvrKKalDnO5fu9iT',
+    accessKey: 'alojQRohuxxFCNVsR6pT',
+    secretKey: 'Qs5L00z0jMyy3TXbIzv4ZmVz36zhwjyur00mvL89',
 })
 
 
 const COUNTERS_FILE = './bucketAccessCounters.json';
+const logFilename = 'trilateration_times.json';
 
 let bucketAccessCounters = {};
 try {
@@ -196,6 +201,10 @@ setInterval(() => {
     // Flip the value between 0 and 1 for the next send
     valueToSend = 1 - valueToSend;
 }, 20000);
+
+setInterval(() => {
+    signalMap.measureAndLogTrilaterationTimes(logFilename, signalMap, uwbDevices, rooms);
+}, 10000); // Adjust the interval as needed
 
 
 setInterval(() => {
@@ -378,6 +387,14 @@ app.use('/rfid/:bucketName', (req, res, next) => {
 
 //------------------------------------------------------------------------------------------------------------------
 //functions
+
+const measureTrilaterationTime = (signalMap, userID, uwbDevices, rooms) => {
+    const start = performance.now();
+    trilateration(signalMap, userID, uwbDevices, rooms); // Call your function
+    const end = performance.now();
+    return end - start; // Returns execution time in milliseconds
+};
+
 function updateRoomOccupancy() {
     const roomCounts = {}; // Object to store the count of users in each room
 
