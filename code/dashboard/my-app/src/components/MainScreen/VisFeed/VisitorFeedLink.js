@@ -2,11 +2,13 @@ import * as React from 'react';
 import BackCard from './BackCard';
 import CardTitle from '../ExOverview/CardTitle';
 import ViewAll from './ViewAll';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const VisitorFeedLink=()=>{
-
+    const navigate = useNavigate(); // Initialize useNavigate hook
+    
     const handleButtonClick = () => {
-        console.log('Button clicked!');
+        navigate('/feedback');
         // Add your click handling logic here
       };
 

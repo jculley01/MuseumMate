@@ -13,23 +13,79 @@ const exhibitsData = [
   {
     id: 2,
     name: 'Starry Night',
-    room: 'Room - 2.1',
-    rating: 5,
-    lastUpdated: '15m',
+    room: 'Room - 2.2',
+    rating: 4.5,
+    lastUpdated: '30m',
   },
   {
     id: 3,
-    name: 'Portrait of T.Little',
-    room: 'Room - 2.1',
-    rating: 4.5,
-    lastUpdated: '15m',
+    name: 'The Last Supper',
+    room: 'Room - 2.3',
+    rating: 4,
+    lastUpdated: '45m',
   },
   {
     id: 4,
-    name: 'Scream',
-    room: 'Room - 2.1',
-    rating: 3,
-    lastUpdated: '15m',
+    name: 'The Scream',
+    room: 'Room - 2.4',
+    rating: 5,
+    lastUpdated: '1h',
+  },
+  {
+    id: 5,
+    name: 'Guernica',
+    room: 'Room - 3.1',
+    rating: 3.5,
+    lastUpdated: '2h',
+  },
+  {
+    id: 6,
+    name: 'The Persistence of Memory',
+    room: 'Room - 3.2',
+    rating: 5,
+    lastUpdated: '3h',
+  },
+  {
+    id: 7,
+    name: 'The Night Watch',
+    room: 'Room - 3.3',
+    rating: 4.5,
+    lastUpdated: '4h',
+  },
+  {
+    id: 8,
+    name: 'The Great Wave off Kanagawa',
+    room: 'Room - 3.4',
+    rating: 4,
+    lastUpdated: '5h',
+  },
+  {
+    id: 9,
+    name: 'The Birth of Venus',
+    room: 'Room - 4.1',
+    rating: 5,
+    lastUpdated: '6h',
+  },
+  {
+    id: 10,
+    name: 'Girl with a Pearl Earring',
+    room: 'Room - 4.2',
+    rating: 4.5,
+    lastUpdated: '7h',
+  },
+  {
+    id: 11,
+    name: 'American Gothic',
+    room: 'Room - 4.3',
+    rating: 4,
+    lastUpdated: '8h',
+  },
+  {
+    id: 12,
+    name: 'Nighthawks',
+    room: 'Room - 4.4',
+    rating: 3.5,
+    lastUpdated: '9h',
   }
 ];
 
@@ -79,18 +135,19 @@ const RatingStars = ({ rating }) => {
     };
   
     const boxStyle = {
-      backgroundColor: '#FFFFFF',
+      backgroundColor: '#f2f2f2',
       borderRadius: '24px',
       width: '73%',
+      height:'73vh',
       boxSizing: 'border-box',
       boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
       padding: '20px',
       marginBottom: '20px',
-      overflow: 'hidden',
+      overflow: 'auto',
     };
 
     const rateboxStyle = {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#f2f2f2',
         borderRadius: '24px',
         width: '23%',
         boxSizing: 'border-box',
@@ -98,6 +155,7 @@ const RatingStars = ({ rating }) => {
         padding: '20px',
         marginBottom: '20px',
         overflow: 'hidden',
+        height:'25%'
       };
 
       const itemStyle = {
@@ -140,55 +198,104 @@ const RatingStars = ({ rating }) => {
       };
     
       const buttonStyle = {
-        backgroundColor: '#7f7fff',
+        backgroundColor: '#5856d6',
         color: 'white',
-        padding: '10px',
+        padding: '20px',
         border: 'none',
-        borderRadius: '5px',
+        borderRadius: '24px',
         marginRight: '5px',
         cursor: 'pointer',
+        width: '136px',
+        height: '36px',
+        fontSize: '14px',
+        fontFamily: 'Source Sans Pro',
+        fontWeight: 700,
+        display:'flex',
+        justifyContent: 'center', // Centers content horizontally
+       alignItems: 'center', // Centers content vertically
+   
       };
+
+      const rowStyle = {
+        display: 'flex',
+        justifyContent: 'center', // Center the buttons horizontally
+        marginTop: '20px', // Add some space above the buttons
+      };
+
+      const dividerStyle = {
+        height: '1px', // Thin line
+        backgroundColor: '#ccc', // Gray color
+        width: '100%', // Full width of the container
+        margin: '10px 0', // Some vertical space before and after the divider
+      };
+
+      const divStyle = {
+        backgroundColor: '#f2f2f2',
+        color: '#030303',
+        fontSize: '52px',
+        fontFamily: 'Source Sans Pro',
+        fontWeight: 600,
+        lineHeight: '48px',
+        marginTop: '40px',
+        height: '110px',
+        display: 'flex', // Make it a flex container
+        alignItems: 'flex-end', // Align children to the bottom
+        justifyContent: 'flex-start', // Align children to the left
+        padding: '0 0 10px 10px', // Add padding at the bottom and left to offset the text a bit from the corner
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.4)',
+        borderRadius: '24px', // Rounded edges
+        marginLeft:'2.5rem',
+        width: '95.5%',
+      };
+
+   
   
 
    return (
-    <div style={screenStyle}>
-      <div style={boxStyle}>
-        <h2>Real-time</h2>
-        {filteredExhibits.map(exhibit => (
-          <div key={exhibit.id} style={itemStyle}>
-            <div style={itemTextContainerStyle}>
-              <div style={itemNameStyle}>{exhibit.name}</div>
-              <div style={itemDetailStyle}>{exhibit.room}</div>
-            </div>
-            <div style={{ ...starsStyle, justifyContent: 'flex-start' }}>
-              <RatingStars rating={exhibit.rating} />
-              <span style={lastUpdatedStyle}>{exhibit.lastUpdated}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div style={rateboxStyle}>
-        <h2>Filter</h2>
-        <Rate
-          allowHalf
-          value={filterRating}
-          onChange={handleRateChange}
-          style={{ fontSize: '20px', color: '#000', marginBottom: '20px' }}
-        />
-        <Row gutter={16}>
-          <Col>
-            <Button style={buttonStyle} onClick={handleFilter}>
-              Filter
-            </Button>
-          </Col>
-          <Col>
-            <Button style={buttonStyle} onClick={handleReset}>
-              Reset
-            </Button>
-          </Col>
-        </Row>
-      </div>
-    </div>
+    <><div>
+       <div style={divStyle}>
+         Visitor Insights
+       </div>
+     </div><div style={screenStyle}>
+         <div style={boxStyle}>
+           <h2>Real-time</h2>
+           {filteredExhibits.map((exhibit, index) => (
+             <React.Fragment key={exhibit.id}>
+               <div style={itemStyle}>
+                 <div style={itemTextContainerStyle}>
+                   <div style={itemNameStyle}>{exhibit.name}</div>
+                   <div style={itemDetailStyle}>{exhibit.room}</div>
+                 </div>
+                 <div style={{ ...starsStyle, justifyContent: 'flex-start' }}>
+                   <RatingStars rating={exhibit.rating} />
+                   <span style={lastUpdatedStyle}>{exhibit.lastUpdated}</span>
+                 </div>
+               </div>
+               {index !== filteredExhibits.length - 1 && <div style={dividerStyle}></div>}
+             </React.Fragment>
+           ))}
+         </div>
+         <div style={rateboxStyle}>
+           <h2>Filter</h2>
+           <Rate
+             allowHalf
+             value={filterRating}
+             onChange={handleRateChange}
+             style={{ fontSize: '20px', color: '#000', marginBottom: '20px' }} />
+           <Row style={rowStyle}>
+             <Col>
+               <Button style={buttonStyle} onClick={handleFilter}>
+                 Filter
+               </Button>
+             </Col>
+             <Col>
+               <Button style={buttonStyle} onClick={handleReset}>
+                 Reset
+               </Button>
+             </Col>
+           </Row>
+         </div>
+       </div></>
   );
 };
 
