@@ -30,11 +30,12 @@ const RFIDScreen = ({ route }) => {
     const [selectedPrompt, setSelectedPrompt] = useState('');
     const [isPromptPickerVisible, setIsPromptPickerVisible] = useState(false);
     const promptLabels = ["Artist", "Style", "Visit Stats"];
-    const serverIP='10.239.71.233'
+    const serverIP='128.197.53.112'
     const myIP='10.239.71.233'
     const isSpeaking = Speech.isSpeakingAsync();
     const [isRatingVisible, setIsRatingVisible] = useState(false);
     const [wsMessage, setWsMessage] = useState('');
+    const [isNotificationVisible, setIsNotificationVisible] = useState(false);
 
 
 
@@ -79,9 +80,11 @@ useEffect(() => {
     };
     ws.onmessage = (e) => {
         const message = JSON.parse(e.data);
-        console.log('Received message:', message);
-        setWsMessage(message.message); 
+        //console.log('Received message:', message);
+        setWsMessage(message.message);
+        setIsNotificationVisible(true); // Show the notification container
     };
+    
     ws.onerror = (error) => {
         console.error('WebSocket error:', error);
     };
@@ -265,12 +268,22 @@ useEffect(() => {
     
 
     return (
-        <View style={styles.container}>
-            <Camera style={styles.camera} type={Camera.Constants.Type.back}>
+<View style={styles.container}>
+    <Camera style={styles.camera} type={Camera.Constants.Type.back}>
+        {isNotificationVisible && (
+            <View style={styles.notificationContainer}>
+                <Text style={styles.notificationText}>{'Admin Message:'+wsMessage}</Text>
+                <TouchableOpacity 
+                    style={styles.notificationCloseButton} 
+                    onPress={() => setIsNotificationVisible(false)}
+                >
+                    <Text style={styles.closeButtonText}>X</Text>
+                </TouchableOpacity>
+            </View>
+        )}
                 {/* Display the next step */}
                 <View style={styles.nextStepContainer}>
                     <Text style={styles.nextStepText}>Next Step: {getNextStep()}</Text>
-                    <Text>Received Message: {wsMessage}</Text>
 
                 </View>
     
@@ -655,6 +668,33 @@ const styles = StyleSheet.create({
     sendButtonText: {
         color: 'white', // Text color
         // Additional text styling
+    },
+    notificationContainer: {
+        position: 'absolute',
+        top: 8,
+        left: 150,
+        right: 0,
+        backgroundColor: '#7574da',
+        borderRadius: 15,
+        padding: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        zIndex: 2, // Make sure it's above other content
+    },
+    notificationText: {
+        fontSize: 16,
+        color: 'white',
+    },
+    notificationCloseButton: {
+        // Styles for your close button
+        padding: 8,
+        backgroundColor: 'black',
+        borderRadius: 5,
+    },
+    closeButtonText: {
+        color: 'white',
+        fontSize: 14,
     },
     
     
