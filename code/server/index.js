@@ -371,6 +371,34 @@ app.get('/api/popular-rooms', async (req, res) => {
     }
 });
 
+app.post('/api/exhibit-rating', async (req, res) => {
+    const { exhibit, rating } = req.body;
+
+    // Validate input
+    if (!exhibit || typeof exhibit !== 'string') {
+        return res.status(400).send('Invalid exhibit name.');
+    }
+    if (isNaN(rating) || rating < 0 || rating > 5) {
+        return res.status(400).send('Rating must be a float between 0 and 5.');
+    }
+
+    try {
+        // Create a point and write it to the InfluxDB
+        const point = new Point('exhibitRating')
+            .tag('exhibit', exhibit)
+            .floatField('rating', rating);
+
+        writeClient.writePoint(point);
+        await writeClient.flush();
+
+        res.status(200).send('Rating submitted successfully.');
+    } catch (error) {
+        console.error('Error writing to InfluxDB', error);
+        res.status(500).send('Failed to submit rating.');
+    }
+});
+
+
 app.use('/rfid/:bucketName', (req, res, next) => {
     const bucketName = req.params.bucketName.trim();
 
