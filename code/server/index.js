@@ -2,6 +2,9 @@ const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
 const os = require('os');
 const rfidServer = dgram.createSocket('udp4');
+const connectionServer = dgram.createSocket('udp4');
+const batteryStatusServer = dgram.createSocket('udp4');
+const batteryLevelServer = dgram.createSocket('udp4');
 const express = require('express');
 const cors=require('cors')
 const fs = require('fs');
@@ -39,8 +42,6 @@ var minioClient = new Minio.Client({
     secretKey: 'Qs5L00z0jMyy3TXbIzv4ZmVz36zhwjyur00mvL89',
 })
 
-
-const COUNTERS_FILE = './bucketAccessCounters.json';
 const logFilename = 'trilateration_times.json';
 
 let bucketAccessCounters = {};
@@ -49,19 +50,6 @@ try {
 } catch (error) {
     console.log('Starting with new counters.');
 }
-
-const beaconIDs = {
-    "0c:dc:7e:cb:6a:b2": 1,
-    "24:6f:28:76:1d:8e": 2,
-    "0c:dc:7e:cc:4d:3a": 3,
-    "0c:dc:7e:cc:4d:a6": 4,
-    "b8:f0:09:95:93:12": 5,
-    "44:17:93:5e:f7:b2": 6,
-    "0c:dc:7e:cb:46:b6": 7,
-    "fc:f5:c4:16:a3:fe": 8,
-    "0c:dc:7e:cb:06:82": 9,
-    "fc:f5:c4:07:65:6e": 10
-};
 
 const uwbDevices = {
     "1": { x: 2.2, y: 3.2 },
@@ -120,6 +108,143 @@ messageWss.on('connection', function connection(ws) {
         console.log('received: %s', message);
     });
 });
+
+connectionServer.on('error', (err) => {
+    console.error(`server connection error:\n${err.stack}`);
+    connectionServer.close();
+});
+
+connectionServer.on('listening', () => {
+    const address = connectionServer.address();
+    console.log(`connection server listening ${address.address}:${address.port}`);
+});
+
+connectionServer.on('message', (msg, rinfo) => {
+    let message = msg.toString().trim(); // Removed slice assuming no extra char at the end
+    let [userID, onlineStatus] = message.split(','); // Split the message by comma
+
+    // Trim the values to remove any extraneous whitespace
+    userID = userID.trim();
+    onlineStatus = onlineStatus.trim();
+
+    // Convert the status to a boolean integer value: 1 for online, 0 for offline/sleep
+    onlineStatus = onlineStatus === '1' ? 1 : 0;
+
+    // Create a new point for InfluxDB
+    const point = new Point('connectionStatus')
+        .tag('userID', userID)
+        .intField('online', onlineStatus)
+        .timestamp(new Date()); // Use the current time as timestamp
+
+    // Write the point to InfluxDB
+    writeClient.writePoint(point);
+    writeClient.flush()
+        .then(() => {
+            console.log(`Successfully wrote connection status for userID ${userID} to InfluxDB.`);
+        })
+        .catch(err => {
+            console.error(`Error writing connection status to InfluxDB: ${err}`);
+        });
+});
+
+batteryStatusServer.on('error', (err) => {
+    console.error(`batteryStatusServer error:\n${err.stack}`);
+    batteryStatusServer.close();
+});
+
+batteryStatusServer.on('listening', () => {
+    const address = batteryStatusServer.address();
+    console.log(`batteryStatusServer listening ${address.address}:${address.port}`);
+});
+
+batteryStatusServer.on('message', (msg, rinfo) => {
+    let message = msg.toString().trim(); // Assume no extra char at the end
+    let [userID, charging, done] = message.split(','); // Split the message by comma
+
+    // Trim the values to remove any extraneous whitespace
+    userID = userID.trim();
+    charging = charging.trim();
+    done = done.trim();
+
+    // Convert the charging and done status to integers
+    charging = parseInt(charging, 10);
+    done = parseInt(done, 10);
+
+    // Define a status string based on the combination of charging and done
+    let status;
+    if (charging === 0 && done === 0) {
+        status = 'not charging';
+    } else if (charging === 1 && done === 0) {
+        status = 'charging';
+    } else if (charging === 0 && done === 1) {
+        status = 'charging done';
+    } else if (charging === 1 && done === 1) {
+        status = 'error';
+    } else {
+        status = 'unknown'; // Handle unexpected combinations
+    }
+
+    // Create a new point for InfluxDB
+    const point = new Point('batteryStatus')
+        .tag('userID', userID)
+        .intField('charging', charging)
+        .intField('done', done)
+        .stringField('status', status)
+        .timestamp(new Date()); // Use the current time as timestamp
+
+    // Write the point to InfluxDB
+    writeClient.writePoint(point);
+    writeClient.flush()
+        .then(() => {
+            console.log(`Successfully wrote battery status for userID ${userID} to InfluxDB.`);
+        })
+        .catch(err => {
+            console.error(`Error writing battery status to InfluxDB: ${err}`);
+        });
+});
+
+batteryLevelServer.on('error', (err) => {
+    console.error(`batteryLevelServer error:\n${err.stack}`);
+    batteryLevelServer.close();
+});
+
+batteryLevelServer.on('listening', () => {
+    const address = batteryLevelServer.address();
+    console.log(`batteryLevelServer listening ${address.address}:${address.port}`);
+});
+
+batteryLevelServer.on('message', (msg, rinfo) => {
+    let message = msg.toString().trim(); // Assume no extra char at the end
+    let [userID, batteryLevel] = message.split(','); // Split the message by comma
+
+    // Trim and parse the userID and battery level
+    userID = userID.trim();
+    batteryLevel = parseFloat(batteryLevel.trim());
+
+    // Check that batteryLevel is a number within the valid range
+    if (isNaN(batteryLevel) || batteryLevel < 0 || batteryLevel > 100) {
+        console.error(`Invalid battery level received from userID ${userID}: ${batteryLevel}`);
+        return; // Skip writing invalid data to InfluxDB
+    }
+
+    // Create a new point for InfluxDB
+    const point = new Point('batteryLevel')
+        .tag('userID', userID)
+        .floatField('level', batteryLevel)
+        .timestamp(new Date()); // Use the current time as timestamp
+
+    // Write the point to InfluxDB
+    writeClient.writePoint(point);
+    writeClient.flush()
+        .then(() => {
+            console.log(`Successfully wrote battery level for userID ${userID} to InfluxDB.`);
+        })
+        .catch(err => {
+            console.error(`Error writing battery level to InfluxDB: ${err}`);
+        });
+});
+
+
 
 //turn the server on and report any errors that occur
 server.on('error', (err) => {
@@ -388,6 +513,34 @@ app.get('/api/popular-rooms', async (req, res) => {
     }
 });
 
+app.post('/api/exhibit-rating', async (req, res) => {
+    const { exhibit, rating } = req.body;
+
+    // Validate input
+    if (!exhibit || typeof exhibit !== 'string') {
+        return res.status(400).send('Invalid exhibit name.');
+    }
+    if (isNaN(rating) || rating < 0 || rating > 5) {
+        return res.status(400).send('Rating must be a float between 0 and 5.');
+    }
+
+    try {
+        // Create a point and write it to the InfluxDB
+        const point = new Point('exhibitRating')
+            .tag('exhibit', exhibit)
+            .floatField('rating', rating);
+
+        writeClient.writePoint(point);
+        await writeClient.flush();
+
+        res.status(200).send('Rating submitted successfully.');
+    } catch (error) {
+        console.error('Error writing to InfluxDB', error);
+        res.status(500).send('Failed to submit rating.');
+    }
+});
+
+
 app.use('/rfid/:bucketName', (req, res, next) => {
     const bucketName = req.params.bucketName.trim();
 
@@ -401,6 +554,8 @@ app.use('/rfid/:bucketName', (req, res, next) => {
     next();
 });
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 
 //------------------------------------------------------------------------------------------------------------------
 //functions
@@ -411,6 +566,8 @@ const measureTrilaterationTime = (signalMap, userID, uwbDevices, rooms) => {
     const end = performance.now();
     return end - start; // Returns execution time in milliseconds
 };
+
+let roomOccupancyCounts = {};
 
 function updateRoomOccupancy() {
     const roomCounts = {}; // Object to store the count of users in each room
@@ -428,6 +585,7 @@ function updateRoomOccupancy() {
         }
     });
 
+    roomOccupancyCounts = roomCounts;
     // Print the room occupancy counts
     Object.entries(roomCounts).forEach(([roomName, count]) => {
         console.log(`Room: ${roomName}, Occupancy: ${count}`);
@@ -547,13 +705,68 @@ server.on('upgrade', (request, socket, head) => {
 const PORT = 3333;
 server.bind(PORT);
 rfidServer.bind(3334);
+connectionServer.bind(3330);
+batteryStatusServer.bind(3331);
+batteryLevelServer.bind(3332);
 
 
 
 
 
+//----------------------------------------------------------------------
+//congestion functions
+
+function calculateDistance(roomA, roomB) {
+    let centerX_A = (roomA.x1 + roomA.x2) / 2;
+    let centerY_A = (roomA.y1 + roomA.y2) / 2;
+    let centerX_B = (roomB.x1 + roomB.x2) / 2;
+    let centerY_B = (roomB.y1 + roomB.y2) / 2;
+
+    return Math.sqrt(Math.pow(centerX_A - centerX_B, 2) + Math.pow(centerY_A - centerY_B, 2));
+}
 
 
+function calculateCongestion(roomID) {
+    const room = rooms[roomID];
+    const currentOccupancy = roomOccupancyCounts[roomID] || 0;
+    return currentOccupancy / room.maxOccupancy;
+}
+
+
+
+function updateGraphWithWeights(graph, rooms) {
+    let updatedGraph = {};
+
+    for (let roomIDA in graph) {
+        updatedGraph[roomIDA] = {};
+
+        for (let roomIDB in graph[roomIDA]) {
+            if (rooms[roomIDA] && rooms[roomIDB]) { // Check if both rooms exist
+                let weight = calculateWeight(rooms[roomIDA], rooms[roomIDB]);
+                updatedGraph[roomIDA][roomIDB] = weight;
+            }
+        }
+    }
+
+    return updatedGraph;
+}
+
+function calculateWeight(roomA, roomB) {
+    let distance = calculateDistance(roomA, roomB);
+    let congestionA = calculateCongestion(roomA.id);
+    let congestionB = calculateCongestion(roomB.id);
+
+    // Weight formula can be adjusted as needed
+    return (0.7 * distance) + (0.3 * (congestionA + congestionB) / 2);
+}
+
+
+let graph = updateGraphWithWeights(preSetGraph, rooms);
+
+setInterval(() => {
+    updateRoomOccupancy(); // Refresh occupancy data
+    graph = updateGraphWithWeights(preSetGraph, rooms); // Update graph with dynamic weights
+}, 1000); // Every second (adjust interval as necessary)
 
 
 //---------------------------------------------------------------------------------

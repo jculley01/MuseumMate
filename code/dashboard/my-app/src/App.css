@@ -132,3 +132,21 @@ html {
 .rounded-table .ant-table-container {
   border-radius: 16px; /* Apply the same border-radius to the container for consistency */
 }
+
+/* For Chrome, Edge, and Safari */
+::-webkit-scrollbar {
+  width: 12px; /* Width of the vertical scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Color of the tracking area */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888; /* Color of the scroll thumb */
+  border-radius: 6px; /* Rounded corners of the scroll thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Color of the scroll thumb when hovered */
+}
