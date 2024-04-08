@@ -69,11 +69,11 @@ const uwbDevices = {
 };
 
 const rooms = {
-    "1": { x1: 12.4, y1: 18.2, x2: 20.9, y2: 26.4 },
-    "2": { x1: 0.001, y1: 16.2, x2: 12.4, y2: 18.2},
-    "3": { x1: 0.0001, y1: 6.8, x2: 6.5, y2: 16.2 },
-    "4": { x1: 0.00001, y1: 0.000001, x2: 20, y2: 6.8 },
-    "5": { x1: 12.4, y1: 6.3, x2: 20, y2: 18.2 },
+    "1": { x1: 12.4, y1: 18.2, x2: 20.9, y2: 26.4, maxOccupancy:30},
+    "2": { x1: 0.001, y1: 16.2, x2: 12.4, y2: 18.2, maxOccupancy:30},
+    "3": { x1: 0.0001, y1: 6.8, x2: 6.5, y2: 16.2 , maxOccupancy:30},
+    "4": { x1: 0.00001, y1: 0.000001, x2: 20, y2: 6.8 , maxOccupancy:30},
+    "5": { x1: 12.4, y1: 6.3, x2: 20, y2: 18.2, maxOccupancy:30 },
 };
 
 const RFIDs = {
@@ -89,7 +89,7 @@ const RFIDs = {
 let userDeviceMap = {};
 let userLastRoom = {};
 
-const graph = {
+const preSetGraph = {
     '1': { '2': 5, '5': 5 },
     '2': { '3': 5 , '1': 5},
     '3': { '2': 5 , '4': 5},
@@ -554,7 +554,7 @@ app.use('/rfid/:bucketName', (req, res, next) => {
     next();
 });
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+//app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 
 //------------------------------------------------------------------------------------------------------------------
