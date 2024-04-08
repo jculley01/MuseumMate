@@ -64,14 +64,28 @@ const beaconIDs = {
 };
 
 const uwbDevices = {
-    "1": { x: 0, y: 1.982 },
-    "2": { x: 2.51, y: 7.15 },
-    "3": { x: 6.7, y: 5.063 },
+    "1": { x: 2.2, y: 3.2 },
+    "2": { x: 7, y: 3.2},
+    "3": { x: 7, y: 0.001 },
+    "4": { x: 11.3, y: 3.2 },
+    "5": { x: 15.45, y: 3.2 },
+    "6": { x: 14.7, y: 8.8 },
+    "7": { x: 18.07, y: 14.3 },
+    "8": { x: 18.08, y: 18.2 },
+    "9": { x: 12.4, y: 18.2 },
+    "10": { x: 3, y: 11.4 },
+    "11": { x: 0.0001, y: 18.2 },
+    "12": { x: 20.9, y: 24.6 },
+    "13": { x: 20.9, y: 19.4 },
+    "14": { x: 12.9, y: 22.4 },
 };
 
 const rooms = {
-    "1.1": { x1: 0, y1: 0, x2: 6.748, y2: 3.58 },
-    "1.2": { x1: 0, y1: 3.59, x2: 6.748, y2: 7.19 },
+    "1": { x1: 12.4, y1: 18.2, x2: 20.9, y2: 26.4 },
+    "2": { x1: 0.001, y1: 16.2, x2: 12.4, y2: 18.2},
+    "3": { x1: 0.0001, y1: 6.8, x2: 6.5, y2: 16.2 },
+    "4": { x1: 0.00001, y1: 0.000001, x2: 20, y2: 6.8 },
+    "5": { x1: 12.4, y1: 6.3, x2: 20, y2: 18.2 },
 };
 
 const RFIDs = {
@@ -88,8 +102,11 @@ let userDeviceMap = {};
 let userLastRoom = {};
 
 const graph = {
-    '1.1': { '1.2': 5 },
-    '1.2': { '1.1': 5 },
+    '1': { '2': 5, '5': 5 },
+    '2': { '3': 5 , '1': 5},
+    '3': { '2': 5 , '4': 5},
+    '4': { '3': 5 , '5': 5},
+    '5': { '4': 5 , '1': 5},
 };
 
 
@@ -192,19 +209,19 @@ const intervalId = setInterval(() => {
 setInterval(() => {
     signalMap.printAllSignals();
     console.log(`The predicted location is: `, trilateration(signalMap, 1, uwbDevices, rooms));
-}, 10000)
+}, 3000)
 
 let valueToSend = 0;
 
-setInterval(() => {
-    sendMessageToDevice(1, `${valueToSend}`);
-    // Flip the value between 0 and 1 for the next send
-    valueToSend = 1 - valueToSend;
-}, 20000);
+// setInterval(() => {
+//     sendMessageToDevice(1, `${valueToSend}`);
+//     // Flip the value between 0 and 1 for the next send
+//     valueToSend = 1 - valueToSend;
+// }, 20000);
 
-setInterval(() => {
-    signalMap.measureAndLogTrilaterationTimes(logFilename, signalMap, uwbDevices, rooms);
-}, 10000); // Adjust the interval as needed
+// setInterval(() => {
+//     signalMap.measureAndLogTrilaterationTimes(logFilename, signalMap, uwbDevices, rooms);
+// }, 10000); // Adjust the interval as needed
 
 
 setInterval(() => {
@@ -434,21 +451,15 @@ let userRoomDurationsMap = {};
 
 function updateUserRoomDurations() {
     const currentTime = Date.now();
-    console.log(`Current Time: ${currentTime}`);
 
     Object.keys(signalMap.userBeaconMap).forEach(userID => {
-        console.log(`Processing User ID: ${userID}`);
         const currentRoom = trilateration(signalMap, userID, uwbDevices, rooms);
-        console.log(`Current Room for User ${userID}: ${currentRoom}`);
 
         // Use the dedicated map for room duration tracking
         if (!userRoomDurationsMap[userID]) {
-            console.log(`Initializing record for User ${userID}`);
             userRoomDurationsMap[userID] = { currentRoom, entryTime: currentTime };
         } else {
             const userData = userRoomDurationsMap[userID];
-            console.log("userData: ", userData);
-            console.log(`User ${userID} was previously in room: ${userData.currentRoom}`);
 
             if (currentRoom !== userData.currentRoom) {
                 const duration = currentTime - userData.entryTime;
@@ -462,7 +473,6 @@ function updateUserRoomDurations() {
                 userData.currentRoom = currentRoom;
                 userData.entryTime = currentTime;
             } else {
-                console.log(`User ${userID} is still in the same room: ${currentRoom}. No action needed.`);
             }
         }
     });
@@ -470,7 +480,6 @@ function updateUserRoomDurations() {
 
 function logRoomStayDuration(userID, roomName, duration) {
     const durationInSeconds = duration / 1000;
-    console.log(`Logging duration for User ${userID} in room ${roomName}. Duration: ${durationInSeconds} seconds`);
 
     if (isNaN(durationInSeconds)) {
         console.error(`Error: duration is NaN for userID ${userID} in room ${roomName}. Skipping log.`);
@@ -481,7 +490,6 @@ function logRoomStayDuration(userID, roomName, duration) {
         .tag('userID', userID)
         .tag('roomName', roomName)
         .floatField('duration', durationInSeconds);
-    console.log(`Point to be written for User ${userID}:`, JSON.stringify(point)); // Assuming JSON.stringify is illustrative
 
     writeClient.writePoint(point);
     writeClient.flush().catch(err => console.error('Error writing data to InfluxDB:', err));

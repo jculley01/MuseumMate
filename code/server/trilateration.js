@@ -46,10 +46,25 @@ function trilaterate(point1, point2, point3) {
 
     const S = (Math.pow(xc, 2.) - Math.pow(xb, 2.) + Math.pow(yc, 2.) - Math.pow(yb, 2.) + Math.pow(rb, 2.) - Math.pow(rc, 2.)) / 2.0;
     const T = (Math.pow(xa, 2.) - Math.pow(xb, 2.) + Math.pow(ya, 2.) - Math.pow(yb, 2.) + Math.pow(rb, 2.) - Math.pow(ra, 2.)) / 2.0;
-    const y = ((T * (xb - xc)) - (S * (xb - xa))) / (((ya - yb) * (xb - xc)) - ((yc - yb) * (xb - xa)));
-    const x = ((y * (ya - yb)) - T) / (xb - xa);
+
+    const denomY = (((ya - yb) * (xb - xc)) - ((yc - yb) * (xb - xa)));
+    if (denomY === 0) {
+        console.log("Error: Division by zero in calculating y.");
+        return { x: NaN, y: NaN };
+    }
+    const y = ((T * (xb - xc)) - (S * (xb - xa))) / denomY;
+
+    const denomX = (xb - xa);
+    if (denomX === 0) {
+        console.log("Error: Division by zero in calculating x.");
+        return { x: NaN, y: NaN };
+    }
+    const x = ((y * (ya - yb)) - T) / denomX;
+
+    console.log("x: ", x, "y: ", y);
     return { x, y };
 }
+
 
 function findUserRoom(userPosition, rooms) {
     for (const roomName in rooms) {
