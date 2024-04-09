@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity,Modal,ActivityIndicator } from 'react-native';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { Camera } from 'expo-camera';
@@ -51,7 +51,6 @@ const transitionImages={
 }
   
 
-
 const RFIDScreen = ({ route }) => {
     const [rfidData, setRFIDData] = useState(null);
     const [selectedLanguage, setSelectedLanguage] = useState('en');
@@ -78,6 +77,9 @@ const RFIDScreen = ({ route }) => {
     const [isMapVisible, setIsMapVisible] = useState(false);
     const [exhibitName, setExhibitName] = useState("Dinosaur Fossils"); // Example
     const [rating, setRating] = useState(0); // Initialize rating state
+
+    const currentRatingRef = useRef(0);
+
 
 
 
@@ -336,15 +338,15 @@ useEffect(() => {
             // Construct the payload
             const payload = {
                 exhibit: exhibitName,
-                rating: rating
+                rating: currentRatingRef.current
             };
             
             // Perform the POST request
-            const response = await axios.post(`http://${serverIP}/api/exhibit-rating`, payload);
+            const response = await axios.post(`http://${serverIP}:3000/api/exhibit-rating`, payload);
             
             // Check response status
             if (response.status === 200) {
-                alert("Rating sent successfully!");
+                //alert("Rating sent successfully!");
             } else {
                 // Handle server response indicating a failure
                 alert("Failed to send rating.");
@@ -353,6 +355,7 @@ useEffect(() => {
             console.error("Error sending rating:", error);
             alert("Failed to send rating.");
         }
+        toggleRatingVisibility();
     };
     
     
@@ -447,7 +450,10 @@ useEffect(() => {
                             <View style={styles.ratingContainer}>
                                 <Rating
                                     showRating
-                                    onFinishRating={(rating) => console.log('Rated with: ', rating)} // Temporarily log the rating, adjust as needed
+                                    onFinishRating={(rating) => {
+                                        setRating(rating); // Update state if needed elsewhere in your component
+                                        currentRatingRef.current = rating; // Update ref to hold the latest rating
+                                    }}
                                     style={{ paddingVertical: 10 }}
                                     imageSize={30}
                                     startingValue={0}
