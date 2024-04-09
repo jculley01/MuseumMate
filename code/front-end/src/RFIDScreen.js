@@ -69,7 +69,7 @@ const RFIDScreen = ({ route }) => {
     const [isPromptPickerVisible, setIsPromptPickerVisible] = useState(false);
     const promptLabels = ["Artist", "Style", "Visit Stats"];
     const serverIP='128.197.53.112'
-    const myIP='10.239.71.233'
+   // const myIP='10.239.71.233'
     const isSpeaking = Speech.isSpeakingAsync();
     const [isRatingVisible, setIsRatingVisible] = useState(false);
     const [wsMessage, setWsMessage] = useState('');

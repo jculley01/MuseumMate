@@ -1,5 +1,7 @@
 // import { StatusBar } from 'expo-status-bar';
 import React from 'react';
+import 'expo-dev-client';
+import 'react-native-gesture-handler';
 import BarcodeScanner from './src/BarcodeScanner';
 import HomeScreen from './src/HomeScreen';
 import TourType from './src/TourType';
@@ -9,6 +11,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import CurrectLoc from './src/CurrentLoc';
 import RFIDScreen from './src/RFIDScreen'
 import { LogBox } from 'react-native';
+
+
 
 LogBox.ignoreLogs(['Sending `Exponent.speakingWillSayNextString` with no listeners registered.', 'Sending `Exponent.speakingDone` with no listeners registered.']);
 
