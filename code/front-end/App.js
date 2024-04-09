@@ -50,7 +50,7 @@ function App() {
         name="TourType"
         component={TourType}
         options={{
-          title: 'TourType',
+          title: 'Tour Type',
           headerStyle: {
             backgroundColor: '#7574DA',
           },
@@ -64,7 +64,7 @@ function App() {
         name="PreMade"
         component={PreMade}
         options={{
-          title: 'PreMade',
+          title: 'Pre Made Tours',
           headerStyle: {
             backgroundColor: '#7574DA',
           },
@@ -78,7 +78,7 @@ function App() {
         name="CurrentLoc"
         component={CurrectLoc}
         options={{
-          title: 'CurrentLoc',
+          title: 'Custom',
           headerStyle: {
             backgroundColor: '#7574DA',
           },
@@ -92,7 +92,7 @@ function App() {
         name="RFIDScreen"
         component={RFIDScreen}
         options={{
-          title: 'RFIDScreen',
+          title: 'Media',
           headerStyle: {
             backgroundColor: '#7574DA',
           },

@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Image, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 
 const images = {
-  '1.1': require('./img/map1-1.png'),
-  '1.2': require('./img/map1-2.png'),
-  '2.1': require('./img/map2-1.png'),
-  '2.2': require('./img/map2-2.png'),
-  '3.1': require('./img/map3-1.png'),
-  '3.2': require('./img/map3-2.png'),
+  '1': require('./img/map1.png'),
+  '2': require('./img/map2.png'),
+  '3': require('./img/map3.png'),
+  '4': require('./img/map4.png'),
+  '5': require('./img/map5.png'),
+  // '3.2': require('./img/map3-2.png'),
 };
 
 function CurrentLoc({navigation, route }) {
@@ -75,7 +75,7 @@ function CurrentLoc({navigation, route }) {
         : <Text>Loading or no image available...</Text>
       }
       <View style={styles.roomButtonsContainer}>
-        {['1.1', '1.2', '2.1', '2.2', '3.1', '3.2'].map(room => (
+        {['1', '2', '3', '4','5'].map(room => (
           <TouchableOpacity
             key={room}
             style={selectedRooms[room] ? styles.selectedRoomButton : styles.roomButton}

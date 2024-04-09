@@ -4,11 +4,6 @@ import { useNavigation } from '@react-navigation/native';
 
 
 
-  const handleEx = () => {
-    // Placeholder for the confirm button functionality
-    // You can add logic here to handle the confirmed data
-    alert('Explore!');
-  };
 
 
 
@@ -25,6 +20,10 @@ const TourType = ({ navigation, route }) => {
     }
     };
 
+    
+  const handleEx = () => {
+    navigation.navigate('RFIDScreen')
+  };
 
   return (
     <View style={styles.container}>

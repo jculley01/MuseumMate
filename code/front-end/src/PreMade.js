@@ -31,7 +31,7 @@ const PreMade = ({ navigation, route }) => {
         <Text style={styles.buttonText}>Empires In Harmony (3hr)</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.tourButton} onPress={handleCurrent}>
-        <Text style={styles.buttonText}>Current Location</Text>
+        <Text style={styles.buttonText}>Custom</Text>
       </TouchableOpacity>
     </View>
   );

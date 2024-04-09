@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity,Modal,ActivityIndicator } from 'react-native';
+import ImageViewer from 'react-native-image-zoom-viewer';
 import { Camera } from 'expo-camera';
 import { Picker } from '@react-native-picker/picker';
 import * as Speech from 'expo-speech'; // Import expo-speech
@@ -11,6 +12,44 @@ import { Entypo } from '@expo/vector-icons';
 import { Rating } from 'react-native-ratings';
 import { Feather } from '@expo/vector-icons';
 
+
+
+const images = {
+    '1': require('./img/map1.png'),
+    '2': require('./img/map2.png'),
+    '3': require('./img/map3.png'),
+    '4': require('./img/map4.png'),
+    '5': require('./img/map5.png'),
+    'default':require('./img/allmap.png'),
+  };
+
+const transitionImages={
+    '1-2': require('./img/9map1-2.png'),
+    '1-3': require('./img/9map1-3.png'),
+    '1-4': require('./img/9map1-4.png'),
+    '1-5': require('./img/9map1-5.png'),
+
+    '2-1': require('./img/9map2-1.png'),
+    '2-3': require('./img/9map2-3.png'),
+    '2-4': require('./img/9map2-4.png'),
+    '2-5': require('./img/9map2-5.png'),
+
+    '3-1': require('./img/9map3-1.png'),
+    '3-2': require('./img/9map3-2.png'),
+    '3-4': require('./img/9map3-4.png'),
+    '3-5': require('./img/9map3-5.png'),
+
+    '4-1': require('./img/9map4-1.png'),
+    '4-2': require('./img/9map4-2.png'),
+    '4-3': require('./img/9map4-3.png'),
+    '4-5': require('./img/9map4-5.png'),
+
+    '5-1': require('./img/9map5-1.png'),
+    '5-2': require('./img/9map5-2.png'),
+    '5-3': require('./img/9map5-3.png'),
+    '5-4': require('./img/9map5-4.png'),
+}
+  
 
 
 const RFIDScreen = ({ route }) => {
@@ -36,6 +75,11 @@ const RFIDScreen = ({ route }) => {
     const [isRatingVisible, setIsRatingVisible] = useState(false);
     const [wsMessage, setWsMessage] = useState('');
     const [isNotificationVisible, setIsNotificationVisible] = useState(false);
+    const [isMapVisible, setIsMapVisible] = useState(false);
+    const [exhibitName, setExhibitName] = useState("Dinosaur Fossils"); // Example
+    const [rating, setRating] = useState(0); // Initialize rating state
+
+
 
 
 
@@ -147,6 +191,22 @@ useEffect(() => {
         return path[currentIndex + 1];
     };
 
+    //Calculate the image to display
+    const currentLocationImage = images[currentLocation] || images['default'];
+    const nextStep = getNextStep();
+    let imageUrl;
+
+    if (currentLocation && nextStep) {
+        const transitionKey = `${currentLocation}-${nextStep}`;
+        imageUrl = transitionImages[transitionKey]
+            ? Image.resolveAssetSource(transitionImages[transitionKey]).uri
+            : Image.resolveAssetSource(currentLocationImage).uri; // Fallback to the current location image if no specific transition image is found
+    } else {
+        imageUrl = Image.resolveAssetSource(currentLocationImage).uri;
+    }
+
+
+    
     const removeImage = (name) => {
         setObjectData(currentData => currentData.filter(item => item.name !== name));
     };
@@ -171,7 +231,7 @@ useEffect(() => {
     };
 
     const sendPromptToGolangAPI = async (prompt) => {
-        const golangAPIEndpoint = `http:/${myIP}:4040/chat`; // Replace with your GoLang API URL
+        const golangAPIEndpoint = `http:/${serverIP}:4040/chat`; // Replace with your GoLang API URL
         setIsLoadingApiResponse(true); // Start loading
         try {
             const response = await axios.post(golangAPIEndpoint, { prompt: prompt });
@@ -265,6 +325,36 @@ useEffect(() => {
     const toggleRatingVisibility = () => {
         setIsRatingVisible(!isRatingVisible);
     };
+
+    const handleFinishRating = (ratingValue) => {
+        setRating(ratingValue); // Set the new rating
+    };
+    
+
+    const sendRating = async () => {
+        try {
+            // Construct the payload
+            const payload = {
+                exhibit: exhibitName,
+                rating: rating
+            };
+            
+            // Perform the POST request
+            const response = await axios.post(`http://${serverIP}/api/exhibit-rating`, payload);
+            
+            // Check response status
+            if (response.status === 200) {
+                alert("Rating sent successfully!");
+            } else {
+                // Handle server response indicating a failure
+                alert("Failed to send rating.");
+            }
+        } catch (error) {
+            console.error("Error sending rating:", error);
+            alert("Failed to send rating.");
+        }
+    };
+    
     
 
     return (
@@ -274,17 +364,18 @@ useEffect(() => {
             <View style={styles.notificationContainer}>
                 <Text style={styles.notificationText}>{'Admin Message:'+wsMessage}</Text>
                 <TouchableOpacity 
-                    style={styles.notificationCloseButton} 
+                    style={styles.notificationCloseButtonNoti} 
                     onPress={() => setIsNotificationVisible(false)}
                 >
-                    <Text style={styles.closeButtonText}>X</Text>
+                    <Text style={styles.closeButtonTextNoti}>X</Text>
                 </TouchableOpacity>
             </View>
         )}
                 {/* Display the next step */}
                 <View style={styles.nextStepContainer}>
-                    <Text style={styles.nextStepText}>Next Step: {getNextStep()}</Text>
-
+                     <TouchableOpacity onPress={() => setIsMapVisible(true)} >
+                        <Text style={styles.nextStepText}>Next Step: {getNextStep()}</Text>
+                    </TouchableOpacity>
                 </View>
     
                 {isLoadingApiResponse && (
@@ -346,11 +437,11 @@ useEffect(() => {
                             <Entypo name="info" size={24} color="white" />
                         </TouchableOpacity>
                         <TouchableOpacity
-                onPress={() => setIsRatingVisible(!isRatingVisible)} // Toggle the visibility of the rating component
-                style={styles.apiButton}
-            >
-                <Entypo name="star-outlined" size={24} color="white" />
-            </TouchableOpacity>
+                                    onPress={() => setIsRatingVisible(!isRatingVisible)} // Toggle the visibility of the rating component
+                                    style={styles.apiButton}
+                                >
+                                    <Entypo name="star-outlined" size={24} color="white" />
+                         </TouchableOpacity>
                     </View>
                     {isRatingVisible && (
                             <View style={styles.ratingContainer}>
@@ -363,8 +454,8 @@ useEffect(() => {
                                     fractions={1}
                                 />
                                 <TouchableOpacity
-                                    onPress={() => {setIsRatingVisible(false)}}
-                                    style={styles.sendButton} // Apply your button styling here
+                                    onPress={sendRating} // Call sendRating when the button is pressed
+                                    style={styles.sendButton}
                                 >
                                     <Feather name="send" size={24} color="white" />
                                 </TouchableOpacity>
@@ -373,6 +464,17 @@ useEffect(() => {
                 </View>
                 ))}
             </Camera>
+            {/* Map Zoom and Overlay */}
+            <Modal visible={isMapVisible} transparent={true} onRequestClose={() => setIsMapVisible(false)}>
+                        <ImageViewer
+                            imageUrls={[{ url: imageUrl }]}
+                            onSwipeDown={() => setIsMapVisible(false)}
+                            enableSwipeDown={true}
+                            renderIndicator={() => null} // If you want to remove the page indicator
+                        />
+                        <Text style={styles.swipeDownText}>Swipe down to exit</Text>
+            </Modal>
+
     
             {/* Language Picker Modal */}
             <Modal
@@ -692,10 +794,13 @@ const styles = StyleSheet.create({
         backgroundColor: 'black',
         borderRadius: 5,
     },
-    closeButtonText: {
-        color: 'white',
-        fontSize: 14,
+    swipeDownText: {
+        color: '#FFF',
+        fontSize: 16,
+        bottom: '20%',
+        left:'35%'
     },
+    
     
     
     
