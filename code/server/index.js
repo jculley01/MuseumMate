@@ -34,6 +34,9 @@ app.use(cors())
 let org = `MuseumMate`;
 let bucket = `dashboard`;
 let writeClient = client.getWriteApi(org, bucket, 'ns');
+const queryApi = client.getQueryApi(org);
+
+
 var minioClient = new Minio.Client({
     endPoint: 'localhost',
     port: 9000,
@@ -540,6 +543,167 @@ app.post('/api/exhibit-rating', async (req, res) => {
         res.status(500).send('Failed to submit rating.');
     }
 });
+
+//---------------------------------------
+//InfluxDB endpoints to retrieve data for the dashboard
+
+app.get('/api/active-users', async (req, res) => {
+    const query = flux`
+        from(bucket: "dashboard")
+        |> range(start: -1m) // Adjust based on how "recent" you want the data to be
+        |> filter(fn: (r) => r._measurement == "connectionStatus" && r.online == 1)
+        |> count()
+    `;
+
+    try {
+        const result = await queryApi.collectRows(query);
+        const activeUsers = result.length > 0 ? result[0]._value : 0;
+        res.json({ activeUsers });
+    } catch (error) {
+        console.error(`Failed to query InfluxDB: ${error}`);
+        res.status(500).json({ message: "Failed to retrieve active users." });
+    }
+});
+
+app.get('/api/total-users', async (req, res) => {
+    const query = flux`
+        from(bucket: "dashboard")
+        |> range(start: -1d) // Adjust based on how "recent" you want the data to be
+        |> filter(fn: (r) => r._measurement == "connectionStatus" && r.online == 1)
+        |> count()
+    `;
+
+    try {
+        const result = await queryApi.collectRows(query);
+        const activeUsers = result.length > 0 ? result[0]._value : 0;
+        res.json({ activeUsers });
+    } catch (error) {
+        console.error(`Failed to query InfluxDB: ${error}`);
+        res.status(500).json({ message: "Failed to retrieve active users." });
+    }
+});
+
+app.get('/api/room-occupancies', async (req, res) => {
+    const query = flux`
+        from(bucket: "dashboard")
+        |> range(start: -1h) // Adjust based on your needs, last hour in this case
+        |> filter(fn: (r) => r._measurement == "roomOccupancy")
+        |> last() // Gets the most recent data point per room
+    `;
+
+    try {
+        const result = await queryApi.collectRows(query);
+        const occupancies = result.map(d => ({
+            roomID: d.roomName,  // Assuming the room ID is stored in roomName tag
+            occupancy: d._value  // Assuming the occupancy value is stored in the `_value` field
+        }));
+        res.json({ occupancies });
+    } catch (error) {
+        console.error(`Failed to query InfluxDB: ${error}`);
+        res.status(500).json({ message: "Failed to retrieve room occupancies." });
+    }
+});
+
+app.get('/api/exhibit-ratings', async (req, res) => {
+    const query = flux`
+        from(bucket: "dashboard")
+        |> range(start: -365d) // fetch data from the last year
+        |> filter(fn: (r) => r._measurement == "exhibitRating")
+        |> pivot(
+            rowKey:["_time"],
+            columnKey: ["_field"],
+            valueColumn: "_value"
+        )
+    `;
+
+    try {
+        const result = await client.getQueryApi(org).collectRows(query);
+        const ratings = result.map(item => ({
+            exhibit: item.exhibit,  // Assuming 'exhibit' is the tag used for exhibit names
+            rating: parseFloat(item.rating),  // Assuming 'rating' is the field used for the rating value
+            time: item._time  // Optional: includes the timestamp of when the rating was recorded
+        }));
+        res.json(ratings);
+    } catch (error) {
+        console.error(`Failed to query InfluxDB for exhibit ratings: ${error}`);
+        res.status(500).json({ message: "Failed to retrieve exhibit ratings." });
+    }
+});
+
+app.get('/api/room-stats/:timePeriod', async (req, res) => {
+    const { timePeriod } = req.params;
+    let timeFilter;
+
+    switch (timePeriod) {
+        case "today":
+            timeFilter = 'today()';
+            break;
+        case "yesterday":
+            timeFilter = 'subtractDuration(d: 24h, from: today())';
+            break;
+        case "last_week":
+            timeFilter = 'subtractDuration(d: 7d, from: today())';
+            break;
+        case "last_month":
+            timeFilter = 'subtractDuration(d: 30d, from: today())';
+            break;
+        case "last_year":
+            timeFilter = 'subtractDuration(d: 365d, from: today())';
+            break;
+        default:
+            return res.status(400).json({ error: "Invalid time period specified" });
+    }
+
+    const query = flux`
+        from(bucket: "dashboard")
+        |> range(start: ${timeFilter})
+        |> filter(fn: (r) => r._measurement == "roomStayDuration" || r._measurement == "roomAccess")
+        |> pivot(
+            rowKey:["_time"],
+            columnKey: ["_field", "_measurement"],
+            valueColumn: "_value"
+        )
+        |> group(columns: ["roomName"])
+        |> map(fn: (r) => ({
+            roomName: r.roomName,
+            totalVisits: if exists r["roomAccess_count"] then r["roomAccess_count"] else 0,
+            averageDuration: if exists r["roomStayDuration_sum"] and exists r["roomStayDuration_count"] then float(v: r["roomStayDuration_sum"]) / float(v: r["roomStayDuration_count"]) else 0.0
+        }))
+    `;
+
+    try {
+        const result = await client.getQueryApi(org).collectRows(query);
+        res.json(result);
+    } catch (error) {
+        console.error(`Failed to query InfluxDB for room stats: ${error}`);
+        res.status(500).json({ message: "Failed to retrieve room statistics." });
+    }
+});
+
+app.get('/api/occupancy-trends', async (req, res) => {
+    const query = flux`
+        from(bucket: "dashboard")
+        |> range(start: -1d)  // Adjust this to fit the time range you need, e.g., the last 24 hours
+        |> filter(fn: (r) => r._measurement == "roomOccupancy")
+        |> aggregateWindow(every: 2h, fn: mean)  // Aggregating by 2-hour windows; adjust as needed
+        |> yield(name: "mean")
+    `;
+
+    try {
+        const result = await client.getQueryApi(org).collectRows(query);
+        res.json({
+            categories: result.map(r => r._time),  // Converting timestamps to categories
+            data: result.map(r => r._value)        // Occupancy values
+        });
+    } catch (error) {
+        console.error(`Failed to query InfluxDB for occupancy trends: ${error}`);
+        res.status(500).json({ message: "Failed to retrieve occupancy data." });
+    }
+});
+
+
+//-----------------------------------------------
+//middle ware
 
 
 app.use('/rfid/:bucketName', (req, res, next) => {
