@@ -11,6 +11,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
 import { Rating } from 'react-native-ratings';
 import { Feather } from '@expo/vector-icons';
+import ViewPager from 'react-native-pager-view';
+import { Video, ResizeMode } from 'expo-av';
+import { PageIndicator } from 'react-native-page-indicator';
+
+
 
 
 
@@ -69,7 +74,7 @@ const RFIDScreen = ({ route }) => {
     const [isPromptPickerVisible, setIsPromptPickerVisible] = useState(false);
     const promptLabels = ["Artist", "Style", "Visit Stats"];
     const serverIP='128.197.53.112'
-   // const myIP='10.239.71.233'
+    const [pageIndex, setPageIndex] = useState(0);
     const isSpeaking = Speech.isSpeakingAsync();
     const [isRatingVisible, setIsRatingVisible] = useState(false);
     const [wsMessage, setWsMessage] = useState('');
@@ -79,6 +84,7 @@ const RFIDScreen = ({ route }) => {
     const [rating, setRating] = useState(0); // Initialize rating state
 
     const currentRatingRef = useRef(0);
+    const video = React.useRef(null);
 
 
 
@@ -159,7 +165,7 @@ useEffect(() => {
         ws.onopen = () => console.log('WebSocket connection established');
         ws.onmessage = (e) => {
             const message = JSON.parse(e.data);
-            console.log('rfidws'+message)
+           // console.log('rfidws'+message)
             setRFIDData(message);
             fetchObjectData(message.RFID);
         };
@@ -266,52 +272,60 @@ useEffect(() => {
     const fetchObjectData = async (RFID) => {
         try {
             const response = await fetch(`http://${serverIP}:3000/rfid/${RFID}`);
-           // console.log('rfid response:', response);
-    
             if (!response.ok) {
                 console.error('Server responded with an error:', response.status, response.statusText);
                 return;
             }
     
             const data = await response.json();
-    
-            // Initialize an object to hold the fetched contents
             const fetchedData = {
                 description: '',
-                img: '',
-                prompts: []
+                media: [],  // Array to hold both images and videos
+                prompts: [],
+                title:''
             };
     
-            // Fetch each URL based on the type of content it holds
+            // Process each item based on its type
             for (const item of data) {
                 const contentResponse = await fetch(item.url);
                 if (!contentResponse.ok) {
                     console.error(`Error fetching ${item.name}:`, contentResponse.status, contentResponse.statusText);
-                    continue; // Skip this item if there's an error
+                    continue;
                 }
+    
                 if (item.name.includes('desc')) {
                     fetchedData.description = await contentResponse.text();
-                } else if (item.name.includes('img')) {
-                    // Assuming the image URL is directly usable
-                    fetchedData.img = item.url;
+                }else if (item.name.includes('img') || item.name.includes('vid')) {
+                    fetchedData.media.push({
+                        type: item.name.includes('img') ? 'image' : 'video',
+                        url: item.url
+                    });
                 } else if (item.name.includes('prompt')) {
                     const promptsText = await contentResponse.text();
-                    fetchedData.prompts = promptsText.split(','); // Assuming each prompt is on a new line
+                    fetchedData.prompts = promptsText.split(',');
+                }
+                else if (item.name.includes('title')) {
+                    fetchedData.title = await contentResponse.text();
+                    setExhibitName(fetchedData.title)
                 }
             }
-    
+            //console.log("Media Array Contents:", fetchedData.media);
             setObjectData([{
-                name: `Object museummate0001`, // You might want to adjust this based on your actual data structure
-                url: fetchedData.img,
+                name: RFID,
+                media: fetchedData.media,
                 description: fetchedData.description,
                 prompts: fetchedData.prompts,
+                title:fetchedData.title
             }]);
-
-            
+    
         } catch (error) {
             console.error('Error fetching object data:', error);
-        }
+        }  
+         
     };
+    
+ 
+
     
 
 
@@ -358,6 +372,9 @@ useEffect(() => {
         toggleRatingVisibility();
     };
     
+    const onPageSelected = (e) => {
+        setPageIndex(e.nativeEvent.position);
+    };
     
 
     return (
@@ -394,9 +411,35 @@ useEffect(() => {
                         <TouchableOpacity style={styles.closeButton} onPress={() => removeImage(item.name)}>
                             <Text style={styles.closeButtonText}>X</Text>
                         </TouchableOpacity>
-                        <Image source={{ uri: item.url }} style={styles.media} />
-                        
-                        {/* Conditionally render the API response or the item's description */}
+
+                        {/* ViewPager for media */}
+                       
+                        <ViewPager style={styles.viewPager} initialPage={0} onPageSelected={onPageSelected} >
+                            {item.media.map((media, mediaIndex) => (
+                                <View key={mediaIndex} style={styles.pageStyle}>
+                                    {media.type === 'video' ? (
+                                        <Video
+                                            ref={video}
+                                            style={styles.media}
+                                            source={{
+                                            uri: media.url,
+                                            }}
+                                            useNativeControls
+                                            isLooping/>
+                                    ) : (
+                                        <Image
+                                            source={{ uri: media.url }}
+                                            style={styles.media}
+                                        />
+                                    )}
+                                </View>
+                            ))}
+                        </ViewPager>
+                        <View style={styles.pageIndicator}>
+                            <PageIndicator count={item.media.length} current={pageIndex} />
+                        </View>
+
+                        {/* Static content below the ViewPager */}
                         {isApiResponseVisible ? (
                             <View style={styles.apiResponseContainer}>
                                 <Text style={styles.apiResponseText}>{apiResponse}</Text>
@@ -405,70 +448,70 @@ useEffect(() => {
                                 </TouchableOpacity>
                             </View>
                         ) : (
-                            <Text style={styles.descriptionText}>
-                                {translatedText || item.description}
-                            </Text>
+                            <Text style={styles.descriptionText}>{translatedText || item.description}</Text>
                         )}
-                    <View style={styles.actionContainer}>
+
+<View style={styles.actionContainer}>
                        
-                        {/* Translate button */}
+                       {/* Translate button */}
+                       <TouchableOpacity
+                           style={styles.translateButton}
+                           onPress={() => {
+                               setIsPickerVisible(true);
+                           }}
+                       >
+                           <MaterialIcons name="translate" size={24} color="white" />
+                       </TouchableOpacity>
+
+                       {/* Speak button */}
+                       <TouchableOpacity
+                           style={styles.speakButton}
+                           onPress={() => toggleSpeak(item.description, selectedLanguage)}
+                       >
+                               <AntDesign name="sound" size={24} color="white" />
+                           </TouchableOpacity>
+
+
+                        {/* GoLang API button */}
                         <TouchableOpacity
-                            style={styles.translateButton}
-                            onPress={() => {
-                                setIsPickerVisible(true);
-                            }}
-                        >
-                            <MaterialIcons name="translate" size={24} color="white" />
+                           style={styles.apiButton}
+                           onPress={() => {
+                               setIsPromptPickerVisible(true);
+                           }}
+                       >
+                           <Entypo name="info" size={24} color="white" />
+                       </TouchableOpacity>
+                       <TouchableOpacity
+                                   onPress={() => setIsRatingVisible(!isRatingVisible)} // Toggle the visibility of the rating component
+                                   style={styles.apiButton}
+                               >
+                                   <Entypo name="star-outlined" size={24} color="white" />
                         </TouchableOpacity>
+                   </View>
+                   {isRatingVisible && (
+                           <View style={styles.ratingContainer}>
+                               <Rating
+                                   showRating
+                                   onFinishRating={(rating) => {
+                                       setRating(rating); // Update state if needed elsewhere in your component
+                                       currentRatingRef.current = rating; // Update ref to hold the latest rating
+                                   }}
+                                   style={{ paddingVertical: 10 }}
+                                   imageSize={30}
+                                   startingValue={0}
+                                   fractions={1}
+                               />
+                               <TouchableOpacity
+                                   onPress={sendRating} // Call sendRating when the button is pressed
+                                   style={styles.sendButton}
+                               >
+                                   <Feather name="send" size={24} color="white" />
+                               </TouchableOpacity>
+                           </View>
+                       )}
+               </View>
+))}
 
-                        {/* Speak button */}
-                        <TouchableOpacity
-                            style={styles.speakButton}
-                            onPress={() => toggleSpeak(item.description, selectedLanguage)}
-                        >
-                                <AntDesign name="sound" size={24} color="white" />
-                            </TouchableOpacity>
-
-
-                         {/* GoLang API button */}
-                         <TouchableOpacity
-                            style={styles.apiButton}
-                            onPress={() => {
-                                setIsPromptPickerVisible(true);
-                            }}
-                        >
-                            <Entypo name="info" size={24} color="white" />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                                    onPress={() => setIsRatingVisible(!isRatingVisible)} // Toggle the visibility of the rating component
-                                    style={styles.apiButton}
-                                >
-                                    <Entypo name="star-outlined" size={24} color="white" />
-                         </TouchableOpacity>
-                    </View>
-                    {isRatingVisible && (
-                            <View style={styles.ratingContainer}>
-                                <Rating
-                                    showRating
-                                    onFinishRating={(rating) => {
-                                        setRating(rating); // Update state if needed elsewhere in your component
-                                        currentRatingRef.current = rating; // Update ref to hold the latest rating
-                                    }}
-                                    style={{ paddingVertical: 10 }}
-                                    imageSize={30}
-                                    startingValue={0}
-                                    fractions={1}
-                                />
-                                <TouchableOpacity
-                                    onPress={sendRating} // Call sendRating when the button is pressed
-                                    style={styles.sendButton}
-                                >
-                                    <Feather name="send" size={24} color="white" />
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                </View>
-                ))}
             </Camera>
             {/* Map Zoom and Overlay */}
             <Modal visible={isMapVisible} transparent={true} onRequestClose={() => setIsMapVisible(false)}>
@@ -614,6 +657,21 @@ const styles = StyleSheet.create({
         width: Dimensions.get('window').width * 0.8,
         height: Dimensions.get('window').width * 0.6,
         resizeMode: 'contain',
+    },
+    viewPager: {
+          // Takes up the full space of its parent container
+         width: Dimensions.get('window').width * 0.8,
+        height: Dimensions.get('window').width * 0.6,
+    },
+    pageStyle: {
+        alignItems: 'center',  // Centers content horizontally
+        justifyContent: 'center',  // Centers content vertically
+        padding: 10,  // Provides padding inside each page of the ViewPager
+    },
+    pageIndicator: {
+        position: 'relative',
+        top:3,
+        alignSelf: 'center'
     },
     text: {
         fontSize: 18,

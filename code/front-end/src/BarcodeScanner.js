@@ -1,19 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Button, Image, Linking,TouchableOpacity } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 export default function BarcodeScanner() {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [scannedData, setScannedData] = useState(null);
   const navigation = useNavigation();
-  useEffect(() => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true; // To prevent state update if the component is unmounted
+
+      (async () => {
+        const { status } = await BarCodeScanner.requestPermissionsAsync();
+        if (isActive) {
+          setHasPermission(status === 'granted');
+        }
+      })();
+
+      return () => {
+        isActive = false; // Prevent state update on unmounted component
+      };
+    }, [])
+  );
+
 
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
@@ -29,10 +41,12 @@ export default function BarcodeScanner() {
   };
   
 
-  if (hasPermission === 'null') {
-    return <Text> Requesting Camera Permission</Text>;
+  if (hasPermission === null) {
+    return <View style={styles.container}>
+      <Image source={require('./MuseumMate.png')} style={styles.logo} />
+    </View>;
   }
-  if (hasPermission === 'false') {
+  if (hasPermission === false) {
     return <Text> No Access to Camera</Text>;
   }
 

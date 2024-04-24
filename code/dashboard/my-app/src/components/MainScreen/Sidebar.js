@@ -35,7 +35,11 @@ const Sidebar = () => {
     getItem('Overview', '1', <DesktopOutlined />),
     getItem('Feedback', '2', <MailOutlined />),
     getItem('Room Status', 'sub1', <AppstoreOutlined />, [
-      getItem('Room 1.1', '1.1'),
+      getItem('Room 1', '3.1'),
+      getItem('Room 2', '3.2'),
+      getItem('Room 3', '3.3'),
+      getItem('Room 4', '3.4'),
+      getItem('Room 5', '3.5'),
       // ... other items
     ]),
   ];
@@ -57,9 +61,21 @@ const Sidebar = () => {
       case '2': // Feedback
         navigate('/feedback');
         break;
-      case '1.1': // Room 1.1
-        navigate('/room-overview');
+      case '3.1': // Room 1.1
+        navigate('/room-overview/1');
         break;
+      case '3.2': // Room 1.1
+        navigate('/room-overview/2');
+        break;
+      case '3.3': // Room 1.1
+        navigate('/room-overview/3');
+        break;
+      case '3.4': // Room 1.1
+        navigate('/room-overview/4');
+        break;
+      case '3.5': // Room 1.1
+        navigate('/room-overview/5');
+        break;  
       // Add more cases as you add more routes
       default:
         // Handle default case if necessary, or just break

@@ -72,7 +72,7 @@ function App() {
                 </>
               } />
               <Route path="/feedback" element={<RatingScreen />} />
-              <Route path="/room-overview" element={<RoomOverview />} />
+              <Route path="/room-overview/:roomNumber" element={<RoomOverview />} />
             </Routes>
           </div>
         </div>

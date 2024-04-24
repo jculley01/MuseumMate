@@ -5,6 +5,8 @@ import { DownOutlined } from '@ant-design/icons';
 import ListGraphCont from './ListGraphCont';
 import ExhibitTable from './ExhibitTable';
 import RoomLabel from './Roomlabel';
+import { useParams } from 'react-router-dom';
+
 
 const overviewStyle = {
   backgroundColor: '#f0f0f0', // Replace with the actual background color from your image
@@ -45,10 +47,12 @@ const menu = (
   </Menu>
 );
 
-const RoomOverview = () => (
+const RoomOverview = () => {
+  const { roomNumber } = useParams();
+  return (
   <div>
     <div>
-    <RoomLabel text="Room 2.1"/>
+    <RoomLabel text={`Room ${roomNumber}`}/>
   </div>
   <div>
     <div style={overviewStyle} className='overview'>
@@ -121,5 +125,6 @@ const RoomOverview = () => (
   
   
 );
+}
 
 export default RoomOverview;
