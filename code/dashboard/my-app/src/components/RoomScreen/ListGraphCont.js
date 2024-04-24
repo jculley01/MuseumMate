@@ -27,12 +27,12 @@ const ListComponent = () => (
 
 const ListGraphCont = () => (
   <Row gutter={24}>
-    <Col span={16}>
+    <Col span={24}>
       <CapacityLine />
     </Col>
     <Col span={8}>
       <Card style={{backgroundColor:'#f2f2f2', marginLeft:'3.75rem', width:'85%'}}>
-        <ListComponent />
+        {/* <ListComponent /> */}
       </Card>
     </Col>
   </Row>

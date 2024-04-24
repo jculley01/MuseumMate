@@ -1,109 +1,27 @@
 import React, {useState, useEffect} from 'react';
 import { Rate, Row, Col, Button } from 'antd'; // Import necessary components
 
-// Mock data
-const exhibitsData = [
-  {
-    id: 1,
-    name: 'Mona Lisa',
-    room: 'Room - 2.1',
-    rating: 5,
-    lastUpdated: '15m',
-  },
-  {
-    id: 2,
-    name: 'Starry Night',
-    room: 'Room - 2.2',
-    rating: 4.5,
-    lastUpdated: '30m',
-  },
-  {
-    id: 3,
-    name: 'The Last Supper',
-    room: 'Room - 2.3',
-    rating: 4,
-    lastUpdated: '45m',
-  },
-  {
-    id: 4,
-    name: 'The Scream',
-    room: 'Room - 2.4',
-    rating: 5,
-    lastUpdated: '1h',
-  },
-  {
-    id: 5,
-    name: 'Guernica',
-    room: 'Room - 3.1',
-    rating: 3.5,
-    lastUpdated: '2h',
-  },
-  {
-    id: 6,
-    name: 'The Persistence of Memory',
-    room: 'Room - 3.2',
-    rating: 5,
-    lastUpdated: '3h',
-  },
-  {
-    id: 7,
-    name: 'The Night Watch',
-    room: 'Room - 3.3',
-    rating: 4.5,
-    lastUpdated: '4h',
-  },
-  {
-    id: 8,
-    name: 'The Great Wave off Kanagawa',
-    room: 'Room - 3.4',
-    rating: 4,
-    lastUpdated: '5h',
-  },
-  {
-    id: 9,
-    name: 'The Birth of Venus',
-    room: 'Room - 4.1',
-    rating: 5,
-    lastUpdated: '6h',
-  },
-  {
-    id: 10,
-    name: 'Girl with a Pearl Earring',
-    room: 'Room - 4.2',
-    rating: 4.5,
-    lastUpdated: '7h',
-  },
-  {
-    id: 11,
-    name: 'American Gothic',
-    room: 'Room - 4.3',
-    rating: 4,
-    lastUpdated: '8h',
-  },
-  {
-    id: 12,
-    name: 'Nighthawks',
-    room: 'Room - 4.4',
-    rating: 3.5,
-    lastUpdated: '9h',
-  }
-];
+
 
 async function fetchExhibitRatings() {
   try {
-      const response = await fetch('http://128.197.53.112:3000/api/exhibit-ratings');
-      const data = await response.json();
+    const response = await fetch('http://128.197.53.112:3000/api/exhibit-ratings');
+    const data = await response.json();
 
-      // Directly map the API data to your component's display format
-      return data.map(item => ({
-          name: item.exhibit,
-          rating: item.rating,
-          lastUpdated: timeSince(new Date(item.time))
-      }));
+    // Sort data by date descending
+    data.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+    return data.map(item => ({
+      name: item.exhibit,
+      rating: item.rating,
+      lastUpdated: timeSince(new Date(item.time)),
+      time: item.time  // Include raw time for potential further use
+    }));
   } catch (error) {
-      console.error("Failed to fetch exhibit ratings:", error);
+    console.error("Failed to fetch exhibit ratings:", error);
   }
 }
+
 
 
 function timeSince(date) {

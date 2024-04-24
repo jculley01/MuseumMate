@@ -167,7 +167,7 @@ const RoomOverview = () => {
     marginTop:'20px',
     width:'97.5%'
     }}>
-        <ExhibitTable/>
+        {/* <ExhibitTable/> */}
       </div>
   </div>
   </div>
