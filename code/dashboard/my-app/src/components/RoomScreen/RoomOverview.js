@@ -42,39 +42,53 @@ const RoomOverview = () => {
     totalVisits: 0,
   });
 
+  const resetStats = () => {
+    setStats({
+      currentUsers: 0,
+      totalUsers: 0,
+      averageDuration: 0,
+      totalVisits: 0
+    });
+  };
+
+  const fetchData = async () => {
+    //resetStats(); // Reset stats before fetching new data
+    try {
+      const [dataResponse, occupancyResponse, totalResponse] = await Promise.all([
+        fetch(`http://128.197.53.112:3000/api/room-stats/${selectedTimePeriod}`),
+        fetch('http://128.197.53.112:3000/api/room-occupancies'),
+        fetch('http://128.197.53.112:3000/api/total-users')
+      ]);
+      const [data, occupancyData, totalData] = await Promise.all([
+        dataResponse.json(),
+        occupancyResponse.json(),
+        totalResponse.json()
+      ]);
+
+      const roomStats = data.find(stat => stat.roomName === `${roomNumber}`);
+      const occupancyStats = occupancyData.occupancies.find(o => o.roomID === roomNumber);
+
+      // Update stats, handle possible nulls
+      setStats({
+        currentUsers: occupancyStats && occupancyStats.occupancy ? occupancyStats.occupancy : 0,
+        totalUsers: totalData && totalData.totalUsers ? totalData.totalUsers : 0,
+        averageDuration: roomStats && roomStats.averageDuration ? roomStats.averageDuration : 0,
+        totalVisits: roomStats && roomStats.totalVisits ? roomStats.totalVisits : 0,
+      });
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`http://128.197.53.112:3000/api/room-stats/${selectedTimePeriod}`);
-        const data = await response.json();
-        const occupancyResponse = await fetch('http://128.197.53.112:3000/api/room-occupancies');
-        const occupancyData = await occupancyResponse.json();
-        const totalResponse = await fetch('http://128.197.53.112:3000/api/total-users');
-        const totalData = await totalResponse.json();
-
-        const roomStats = data.find(stat => stat.roomName === `${roomNumber}`);
-        const occupancyStats = occupancyData.occupancies[roomNumber];
-
-        if (roomStats) {
-          setStats({
-            currentUsers: occupancyStats.occupancy,
-            totalUsers: totalData.totalUsers, 
-            averageDuration: roomStats.averageDuration,
-            totalVisits: roomStats.totalVisits
-          });
-        }
-        console.log("stats: ", stats);
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      }
-    };
-
     fetchData();
+    const interval = setInterval(fetchData, 5000); // Refresh data every 5 seconds
+    return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [selectedTimePeriod, roomNumber]);
 
   const handleMenuClick = (e) => {
     setSelectedTimePeriod(e.key);
-    setMenuLabel(e.item.props.children); // Update the menu label based on selected item
+    setMenuLabel(e.item.props.children); // This will trigger useEffect to refetch data
   };
 
   const menu = (

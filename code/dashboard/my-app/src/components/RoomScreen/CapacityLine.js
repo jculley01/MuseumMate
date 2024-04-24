@@ -15,7 +15,7 @@ const CapacityLine = () => {
         opacity: 0.2
       },
       toolbar: {
-        show: false
+        show: true
       }
     },
     colors: ['#5856d6'],
