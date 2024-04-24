@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { Rate, Row, Col, Button } from 'antd'; // Import necessary components
 
 // Mock data
@@ -89,6 +89,56 @@ const exhibitsData = [
   }
 ];
 
+async function fetchExhibitRatings() {
+  try {
+      const response = await fetch('http://128.197.53.112:3000/api/exhibit-ratings');
+      const data = await response.json();
+
+      // Directly map the API data to your component's display format
+      return data.map(item => ({
+          name: item.exhibit,
+          rating: item.rating,
+          lastUpdated: timeSince(new Date(item.time))
+      }));
+  } catch (error) {
+      console.error("Failed to fetch exhibit ratings:", error);
+  }
+}
+
+
+function timeSince(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  let interval = seconds / 31536000;
+
+  if (interval > 1) {
+      return Math.floor(interval) + " years";
+  }
+  interval = seconds / 2592000;
+  if (interval > 1) {
+      return Math.floor(interval) + " months";
+  }
+  interval = seconds / 86400;
+  if (interval > 1) {
+      return Math.floor(interval) + " days";
+  }
+  interval = seconds / 3600;
+  if (interval > 1) {
+      return Math.floor(interval) + " hours";
+  }
+  interval = seconds / 60;
+  if (interval > 1) {
+      return Math.floor(interval) + " minutes";
+  }
+  return Math.floor(seconds) + " seconds";
+}
+
+// Usage example
+fetchExhibitRatings().then(exhibitsData => {
+  console.log(exhibitsData);
+  // Here you would typically update your UI with this data
+});
+
+
 // Rating component
 
 const RatingStars = ({ rating }) => {
@@ -104,27 +154,37 @@ const RatingStars = ({ rating }) => {
   
 
   const RatingScreen = () => {
-    // State for the filtered rating
+    const [exhibitsData, setExhibitsData] = useState([]);
     const [filterRating, setFilterRating] = useState(0);
-    // State for the filtered exhibits
-    const [filteredExhibits, setFilteredExhibits] = useState(exhibitsData);
-  
-    // Function to update filter rating
+    const [filteredExhibits, setFilteredExhibits] = useState([]);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await fetchExhibitRatings();
+                setExhibitsData(data);
+                setFilteredExhibits(data);
+            } catch (error) {
+                console.error("Error loading data:", error);
+                // Optionally set error state and display error messages here
+            }
+        };
+        loadData();
+    }, []);
+
     const handleRateChange = (value) => {
-      setFilterRating(value);
+        setFilterRating(value);
     };
-  
-    // Function to apply the filter
+
     const handleFilter = () => {
-      setFilteredExhibits(
-        exhibitsData.filter(exhibit => exhibit.rating >= filterRating)
-      );
+        setFilteredExhibits(
+            exhibitsData.filter(exhibit => exhibit.rating >= filterRating)
+        );
     };
-  
-    // Function to reset the filter
+
     const handleReset = () => {
-      setFilterRating(0);
-      setFilteredExhibits(exhibitsData);
+        setFilterRating(0);
+        setFilteredExhibits(exhibitsData);
     };
   
     // Inline styles

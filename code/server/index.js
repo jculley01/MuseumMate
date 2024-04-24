@@ -548,40 +548,51 @@ app.post('/api/exhibit-rating', async (req, res) => {
 //InfluxDB endpoints to retrieve data for the dashboard
 
 app.get('/api/active-users', async (req, res) => {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60000).toISOString(); // 5 minutes ago, in ISO 8601 format
+
     const query = flux`
         from(bucket: "dashboard")
-        |> range(start: -1m) // Adjust based on how "recent" you want the data to be
-        |> filter(fn: (r) => r._measurement == "connectionStatus" && r.online == 1)
+        |> range(start: -5m)
+        |> filter(fn: (r) => r["_measurement"] == "connectionStatus" and r["_field"] == "online" and r["_value"] == 1)
+        |> distinct(column: "userID")
         |> count()
     `;
 
     try {
         const result = await queryApi.collectRows(query);
-        const activeUsers = result.length > 0 ? result[0]._value : 0;
+        const activeUsers = result.length;
+        console.log("active users: ", activeUsers);
         res.json({ activeUsers });
     } catch (error) {
         console.error(`Failed to query InfluxDB: ${error}`);
         res.status(500).json({ message: "Failed to retrieve active users." });
     }
 });
+
 
 app.get('/api/total-users', async (req, res) => {
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60000).toISOString(); // 24 hours ago, in ISO 8601 format
+
     const query = flux`
         from(bucket: "dashboard")
-        |> range(start: -1d) // Adjust based on how "recent" you want the data to be
-        |> filter(fn: (r) => r._measurement == "connectionStatus" && r.online == 1)
-        |> count()
+        |> range(start: time(v: "${oneDayAgo}"))
+        |> filter(fn: (r) => r["_measurement"] == "connectionStatus" and r["_field"] == "online" and r["_value"] == 1)
+        |> distinct(column: "userID") // Assuming 'userID' is the field that identifies unique users
+        |> count() // Counts the number of unique userIDs
     `;
 
     try {
         const result = await queryApi.collectRows(query);
-        const activeUsers = result.length > 0 ? result[0]._value : 0;
-        res.json({ activeUsers });
+        console.log("Result: ", result);
+        const totalUsers = result.length;
+        console.log("Total users: ", totalUsers);
+        res.json({ totalUsers });
     } catch (error) {
         console.error(`Failed to query InfluxDB: ${error}`);
-        res.status(500).json({ message: "Failed to retrieve active users." });
+        res.status(500).json({ message: "Failed to retrieve total users." });
     }
 });
+
 
 app.get('/api/room-occupancies', async (req, res) => {
     const query = flux`
@@ -632,53 +643,72 @@ app.get('/api/exhibit-ratings', async (req, res) => {
 
 app.get('/api/room-stats/:timePeriod', async (req, res) => {
     const { timePeriod } = req.params;
-    let timeFilter;
+    let rangeStart, rangeStop;
 
     switch (timePeriod) {
         case "today":
-            timeFilter = 'today()';
+            rangeStart = '-24h';
             break;
         case "yesterday":
-            timeFilter = 'subtractDuration(d: 24h, from: today())';
+            rangeStart = '-48h';
+            rangeStop = '-24h';
             break;
         case "last_week":
-            timeFilter = 'subtractDuration(d: 7d, from: today())';
+            rangeStart = '-7d';
             break;
         case "last_month":
-            timeFilter = 'subtractDuration(d: 30d, from: today())';
+            rangeStart = '-30d';
             break;
         case "last_year":
-            timeFilter = 'subtractDuration(d: 365d, from: today())';
+            rangeStart = '-365d';
             break;
         default:
             return res.status(400).json({ error: "Invalid time period specified" });
     }
 
-    const query = flux`
+    const queryDuration = `
         from(bucket: "dashboard")
-        |> range(start: ${timeFilter})
-        |> filter(fn: (r) => r._measurement == "roomStayDuration" || r._measurement == "roomAccess")
-        |> pivot(
-            rowKey:["_time"],
-            columnKey: ["_field", "_measurement"],
-            valueColumn: "_value"
-        )
+        |> range(start: ${rangeStart}${rangeStop ? `, stop: ${rangeStop}` : ''})
+        |> filter(fn: (r) => r._measurement == "roomStayDuration")
         |> group(columns: ["roomName"])
-        |> map(fn: (r) => ({
-            roomName: r.roomName,
-            totalVisits: if exists r["roomAccess_count"] then r["roomAccess_count"] else 0,
-            averageDuration: if exists r["roomStayDuration_sum"] and exists r["roomStayDuration_count"] then float(v: r["roomStayDuration_sum"]) / float(v: r["roomStayDuration_count"]) else 0.0
-        }))
+        |> sum(column: "_value")
+    `;
+
+    const queryAccess = `
+        from(bucket: "dashboard")
+        |> range(start: ${rangeStart}${rangeStop ? `, stop: ${rangeStop}` : ''})
+        |> filter(fn: (r) => r._measurement == "room_access")
+        |> group(columns: ["roomID"])
+        |> sum(column: "_value")
     `;
 
     try {
-        const result = await client.getQueryApi(org).collectRows(query);
-        res.json(result);
+        const durations = await queryApi.collectRows(queryDuration);
+        const accesses = await queryApi.collectRows(queryAccess);
+
+        console.log("Durations: ", durations);
+        console.log("Accesses: ", accesses);
+
+        const durationMap = new Map(durations.map(item => [item.roomName || 'Unknown', item._value]));
+        const accessMap = new Map(accesses.map(item => [item.roomID || 'Unknown', item._value]));
+        console.log("accessMap: ",accessMap);
+        // Combining results
+        const combinedResults = [...durationMap.keys()].map(roomName => ({
+            roomName: roomName,
+            totalVisits: accessMap.get(roomName) || 0,
+            averageDuration: durationMap.get(roomName) || 0
+        }));
+
+        res.json(combinedResults);
     } catch (error) {
         console.error(`Failed to query InfluxDB for room stats: ${error}`);
         res.status(500).json({ message: "Failed to retrieve room statistics." });
     }
 });
+
+
+
+
 
 app.get('/api/occupancy-trends', async (req, res) => {
     const query = flux`

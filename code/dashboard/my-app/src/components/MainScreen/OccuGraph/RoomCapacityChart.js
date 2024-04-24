@@ -1,7 +1,6 @@
 import React from 'react';
 import Chart from 'react-apexcharts';
 import Card from './ChartCard';
-import Dropdown from './ChartDropdown';
 
 class RoomCapacityChart extends React.Component {
   constructor(props) {
@@ -14,7 +13,6 @@ class RoomCapacityChart extends React.Component {
           type: 'bar',
           events: {
             click: function (chart, w, e) {
-              // Handle chart click event
               console.log(chart, w, e);
             },
           },
@@ -33,9 +31,7 @@ class RoomCapacityChart extends React.Component {
           show: false,
         },
         xaxis: {
-          categories: [
-            '2.1', '2.2', '2.3', '3.1', '3.2', '3.3',
-          ],
+          categories: [],
           labels: {
             style: {
               colors: ['#5856d6'],
@@ -50,25 +46,66 @@ class RoomCapacityChart extends React.Component {
       },
       series: [
         {
-          data: [25, 50, 50, 75, 50, 100], // Update these values with your actual data
+          data: [],
         },
       ],
+      noOccupancy: false,
     };
+
+    this.intervalId = null; // Initialize a variable to hold the interval ID
+  }
+
+  componentDidMount() {
+    this.fetchRoomOccupancies();
+    // Set up an interval to refresh the data every 3 seconds
+    this.intervalId = setInterval(this.fetchRoomOccupancies, 3000);
+  }
+
+  componentWillUnmount() {
+    // Clear the interval on component unmount to prevent memory leaks
+    clearInterval(this.intervalId);
+  }
+
+  fetchRoomOccupancies = async () => {
+    try {
+      const response = await fetch('http://128.197.53.112:3000/api/room-occupancies');
+      const data = await response.json();
+      const categories = data.occupancies.map(d => d.roomID);
+      const occupancyData = data.occupancies.map(d => d.occupancy);
+
+      const noOccupancy = occupancyData.every(value => value === 0);
+
+      this.setState(prevState => ({
+        options: {
+          ...prevState.options,
+          xaxis: {
+            ...prevState.options.xaxis,
+            categories: categories,
+          }
+        },
+        series: [{ data: occupancyData }],
+        noOccupancy: noOccupancy,
+      }));
+    } catch (error) {
+      console.error('Failed to fetch room occupancies:', error);
+    }
   }
 
   render() {
     return (
       <Card className="chart-card-container">
-        <div className="chart-header">
-          <Dropdown />
-        </div>
-        <div id="chart">
-          <Chart
-            options={this.state.options}
-            series={this.state.series}
-            type="bar"
-            height={350}
-          />
+        <div className="chart-header"></div>
+        <div id="chart" style={{ textAlign: 'center', fontSize: '1.5rem' }}>
+          {this.state.noOccupancy ? (
+            <p>There are no users in any of the rooms currently.</p>
+          ) : (
+            <Chart
+              options={this.state.options}
+              series={this.state.series}
+              type="bar"
+              height={350}
+            />
+          )}
         </div>
       </Card>
     );

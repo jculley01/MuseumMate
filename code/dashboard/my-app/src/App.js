@@ -14,8 +14,8 @@ import RatingScreen from './components/RatingScreen/RatingScreen';
 
 let mockData={
   "exhibitOverview": {
-    "activeUsers": 534,
-    "totalToday": 1424
+    "activeUsers": 53,
+    "totalToday": 142
   },
   "visitorFeedback": [
     // ... list of feedback objects
