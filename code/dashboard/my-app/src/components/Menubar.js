@@ -92,7 +92,7 @@ const Menubar = () => {
       <AppBar position="static" sx={{ backgroundColor: '#5856d6' }}>
         <Toolbar>
         <img src="/mmlogo.png" alt="MuseumMate Logo" style={{ height: '30px' }} />
-          <Search>
+          {/* <Search>
             <SearchIconWrapper>
               <SearchIcon />
             </SearchIconWrapper>
@@ -100,9 +100,9 @@ const Menubar = () => {
               placeholder="Search…"
               inputProps={{ 'aria-label': 'search' }}
             />
-          </Search>
+          </Search> */}
           <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+          {/* <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
             <IconButton
               size="large"
               aria-label="show 17 new notifications"
@@ -123,7 +123,7 @@ const Menubar = () => {
             >
               <AccountCircle />
             </IconButton>
-          </Box>
+          </Box> */}
         </Toolbar>
       </AppBar>
       {renderMenu}
