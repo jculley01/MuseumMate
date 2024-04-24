@@ -15,7 +15,7 @@ const CapacityLine = () => {
         opacity: 0.2
       },
       toolbar: {
-        show: false
+        show: true
       }
     },
     colors: ['#5856d6'],
@@ -43,7 +43,17 @@ const CapacityLine = () => {
       }
     },
     xaxis: {
-      categories: [], // Initialize empty because we'll set this via API
+      type: 'datetime',
+      tickAmount: 10, // Optional: control the number of ticks
+      labels: {
+        formatter: function(value, timestamp) {
+          return new Date(timestamp).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          });
+        }
+      }
     },
     yaxis: {
       min: 0,
@@ -58,10 +68,8 @@ const CapacityLine = () => {
 
   const [series, setSeries] = useState([{
     name: "Capacity",
-    data: [] // Initialize empty because we'll set this via API
+    data: []
   }]);
-
-
 
   useEffect(() => {
     const fetchOccupancyData = async () => {
@@ -69,20 +77,13 @@ const CapacityLine = () => {
         const response = await fetch('http://128.197.53.112:3000/api/occupancy-trends');
         const { categories, data } = await response.json();
 
-        const formattedCategories = categories.map(timestamp => {
-          const date = new Date(timestamp);
-          return date.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-          });
-        });
-        console.log("formattedCats: ", formattedCategories);
-        setOptions(prevOptions => ({
-          ...prevOptions,
-          xaxis: { ...prevOptions.xaxis, categories: formattedCategories }
+        // Map categories directly to timestamps
+        const formattedData = data.map((point, index) => ({
+          x: new Date(categories[index]),
+          y: point
         }));
-        setSeries([{ name: "Capacity", data }]);
+
+        setSeries([{ name: "Capacity", data: formattedData }]);
       } catch (error) {
         console.error('Failed to fetch occupancy trends:', error);
       }
@@ -90,7 +91,6 @@ const CapacityLine = () => {
 
     fetchOccupancyData();
   }, []);
-
 
   return (
     <div style={{ display: 'flex', justifyContent: 'left' }}>
