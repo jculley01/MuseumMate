@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Col, Row, Dropdown, Menu } from 'antd';
 import IconButton from './IconButton'; 
 import { DownOutlined } from '@ant-design/icons';
@@ -31,24 +31,61 @@ const percentageStyle = (isPositive) => ({
   marginLeft: '5px'
 });
 
-// Menu for the dropdown
-const menu = (
-  <Menu>
-    <Menu.Item key="0">
-      <a href="#today">Today's data</a>
-    </Menu.Item>
-    <Menu.Item key="1">
-      <a href="#yesterday">Yesterday's data</a>
-    </Menu.Item>
-    <Menu.Divider />
-    <Menu.Item key="3" disabled>
-      More options
-    </Menu.Item>
-  </Menu>
-);
-
 const RoomOverview = () => {
   const { roomNumber } = useParams();
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState("today");
+  const [menuLabel, setMenuLabel] = useState("Today's Data");
+  const [stats, setStats] = useState({
+    currentUsers: 0,
+    totalUsers: 0,
+    averageDuration: 0,
+    totalVisits: 0,
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`http://128.197.53.112:3000/api/room-stats/${selectedTimePeriod}`);
+        const data = await response.json();
+        const occupancyResponse = await fetch('http://128.197.53.112:3000/api/room-occupancies');
+        const occupancyData = await occupancyResponse.json();
+        const totalResponse = await fetch('http://128.197.53.112:3000/api/total-users');
+        const totalData = await totalResponse.json();
+
+        const roomStats = data.find(stat => stat.roomName === `${roomNumber}`);
+        const occupancyStats = occupancyData.occupancies[roomNumber];
+
+        if (roomStats) {
+          setStats({
+            currentUsers: occupancyStats.occupancy,
+            totalUsers: totalData.totalUsers, 
+            averageDuration: roomStats.averageDuration,
+            totalVisits: roomStats.totalVisits
+          });
+        }
+        console.log("stats: ", stats);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      }
+    };
+
+    fetchData();
+  }, [selectedTimePeriod, roomNumber]);
+
+  const handleMenuClick = (e) => {
+    setSelectedTimePeriod(e.key);
+    setMenuLabel(e.item.props.children); // Update the menu label based on selected item
+  };
+
+  const menu = (
+    <Menu onClick={handleMenuClick}>
+      <Menu.Item key="today">Today's Data</Menu.Item>
+      <Menu.Item key="yesterday">Yesterday's Data</Menu.Item>
+      <Menu.Item key="last_month">Last Month's Data</Menu.Item>
+      <Menu.Item key="last_year">Last Year's Data</Menu.Item>
+    </Menu>
+  );
+
   return (
   <div>
     <div>
@@ -56,43 +93,43 @@ const RoomOverview = () => {
   </div>
   <div>
     <div style={overviewStyle} className='overview'>
-    <Row style={{ marginBottom: '10px' }}>
-      <Col span={23} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Peak Times</h3>
-        <Dropdown overlay={menu} trigger={['click']}>
-          <a className="ant-dropdown-link" onClick={e => e.preventDefault()} href="#data">
-            Today's data <DownOutlined />
-          </a>
-        </Dropdown>
-      </Col>
-    </Row>
+          <Row style={{ marginBottom: '10px' }}>
+            <Col span={23} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3>Peak Times</h3>
+              <Dropdown overlay={menu} trigger={['click']}>
+                <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+                  {menuLabel} <DownOutlined />
+                </a>
+              </Dropdown>
+            </Col>
+          </Row>
     <Row gutter={16}>
       <Col span={6}>
         <Card style={cardStyle} bordered={false}>
           <IconButton />
-          <h3>Current Users</h3>
-          <h1>245 <span style={percentageStyle(true)}>+28.4%</span></h1>
+          <h3>Current Visitor Count</h3>
+          <h1> {stats.currentUsers} </h1>
         </Card>
       </Col>
       <Col span={6}>
         <Card style={cardStyle} bordered={false}>
           <IconButton />
-          <h3>Total Users</h3>
-          <h1>1567 <span style={percentageStyle(false)}>-28.4%</span></h1>
+          <h3>Total Museum Visitors</h3>
+          <h1> {stats.totalUsers} </h1>
         </Card>
       </Col>
       <Col span={6}>
         <Card style={cardStyle} bordered={false}>
           <IconButton />
-          <h3>Media Scanned</h3>
-          <h1>2677 <span style={percentageStyle(true)}>+28.4%</span></h1>
+          <h3>Average Visit Duration</h3>
+                <h1> {(stats.averageDuration / 60).toFixed(1)} minutes </h1>
         </Card>
       </Col>
       <Col span={6}>
         <Card style={cardStyle} bordered={false}>
           <IconButton />
-          <h3>More info needed</h3>
-          <h1>112</h1>
+          <h3>Total Visits</h3>
+          <h1> {stats.totalVisits} </h1>
         </Card>
       </Col>
     </Row>
