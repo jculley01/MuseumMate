@@ -15,7 +15,8 @@ import (
 )
 
 const chatGPTAPIURL = "https://api.openai.com/v1/chat/completions"
-const apiKey = "Bearer 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" // Hardcoded API Key
+
+//const apiKey =  // Hardcoded API Key
 
 // ChatGPTResponse defines the structure of the response received from the OpenAI API
 type ChatGPTResponse struct {
@@ -77,6 +78,7 @@ func (c *ResponseCache) RefreshCache() {
 }
 
 // generateChatGPTResponse sends a request to the OpenAI API and returns the generated response
+// generateChatGPTResponse sends a request to the OpenAI API and returns the generated response
 func generateChatGPTResponse(inputText string) (string, error) {
 	// Prepare the message payload for the API request
 	messages := []map[string]string{
@@ -98,7 +100,7 @@ func generateChatGPTResponse(inputText string) (string, error) {
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", apiKey)
+	req.Header.Set("Authorization", apiKey) // Consider retrieving this from an environment variable
 
 	// Send the request and get the response
 	resp, err := http.DefaultClient.Do(req)
@@ -118,18 +120,14 @@ func generateChatGPTResponse(inputText string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var responsePayload struct {
-		Choices []struct {
-			Message map[string]string `json:"message"`
-		} `json:"choices"`
-	}
+	var responsePayload ChatGPTResponse
 	if err := json.Unmarshal(body, &responsePayload); err != nil {
 		return "", err
 	}
 
 	// Return the response text or an error if no choices were found
-	if len(responsePayload.Choices) > 0 && len(responsePayload.Choices[0].Message) > 0 {
-		return responsePayload.Choices[0].Message["content"], nil
+	if len(responsePayload.Choices) > 0 {
+		return responsePayload.Choices[0].Text, nil
 	}
 	return "", fmt.Errorf("No choices in the response")
 }
