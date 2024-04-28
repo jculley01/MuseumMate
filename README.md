@@ -313,3 +313,6 @@ GET /rfid/:bucketName: Lists all objects within a specified bucket in Minio stor
 #### Material Design and Human Interface Guidelines
 - **Description**: Design guidelines for Android (Material Design) and iOS (Human Interface Guidelines).
 - **Impact**: Improves user experience and interface intuitiveness, ensuring a native look and feel on each platform.
+## Demo Links
+- https://drive.google.com/file/d/1xxcSSfVXUqi0H7ppWGPCUCPkb2fy99GB/view?usp=drive_link
+- https://drive.google.com/file/d/10ySGV_i79_dgyBcs_XPV-sKXKdbrn-Mb/view?usp=drive_link
