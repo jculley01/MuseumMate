@@ -14,7 +14,7 @@ The schematic diagram offers a detailed visual representation of the electrical 
 
 **Link to TourTag Device Schematic**:
 - [TourTag Device Schematic (PDF)](/media/pcbschematic.pdf)
-![image](/media/pcbschematic.png)
+![image](/media/pcbschematic.PNG)
 - [Source Files (CAD)](/hardware/PCB_KiCAD/UWB_PCB/UWB_PCB.kicad_sch)
 
 ### PCB Layout
