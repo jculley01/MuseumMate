@@ -12,9 +12,10 @@ The schematic diagram offers a detailed visual representation of the electrical 
 
 - **TourTag Device Schematic**: Shows the circuit design for the TourTag device, detailing all integrated circuits, their connections, and header pins used for modular component attachment.
 
+![image](/media/pcbschematic.PNG)
+
 **Link to TourTag Device Schematic**:
 - [TourTag Device Schematic (PDF)](/media/pcbschematic.pdf)
-![image](/media/pcbschematic.PNG)
 - [Source Files (CAD)](/hardware/PCB_KiCAD/UWB_PCB/UWB_PCB.kicad_sch)
 
 ### PCB Layout
@@ -23,9 +24,10 @@ The PCB layout provides detailed information on the arrangement of components on
 
 - **TourTag Devices PCB**: Detailed layout showing the placement of components, traces, vias, and header connectors on the TourTag PCB. This layout aids in understanding how various modules and accessories can be attached and configured.
 
+![image](/media/pcbdesign.PNG) 
+
 **Link to TourTag Devices PCB Layout**:
 - [TourTag Devices PCB Layout (PDF)](/media/pcbdesign.pdf)
-![image](/media/pcbdesign.PNG) 
 - [Editable PCB Design File (KiCAD)](/hardware/PCB_KiCAD/UWB_PCB/UWB_PCB.kicad_pcb)
 
 **Note**: Ensure that you have the necessary software to open CAD and PCB design files, such as KiCAD or another compatible viewer.
