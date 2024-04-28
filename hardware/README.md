@@ -4,8 +4,8 @@ This directory contains all hardware component files for the MuseumMate project,
 
 ## Directory Structure
 
-- **/PCB_KiCAD**: Contains all KiCAD files for the PCB design of the TourTag.
-- **/Enclosures**: Includes the CAD files for the enclosures of both the TourTag and Beacon.
+- `/PCB_KiCAD`: Contains all KiCAD files for the PCB design of the TourTag.
+- `/Enclosures`: Includes the CAD files for the enclosures of both the TourTag and Beacon.
 
 ## PCB Design for TourTag
 
