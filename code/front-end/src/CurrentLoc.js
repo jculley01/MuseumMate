@@ -7,22 +7,23 @@ const images = {
   '3': require('./img/map3.png'),
   '4': require('./img/map4.png'),
   '5': require('./img/map5.png'),
-  // '3.2': require('./img/map3-2.png'),
+  '6': require('./img/allmap.png')
 };
 
-function CurrentLoc({navigation, route }) {
+function CurrentLoc({ navigation, route }) {
   const { scannedValue } = route.params;
   const [imageNumber, setImageNumber] = useState(null);
   const [selectedRooms, setSelectedRooms] = useState({});
-  const serverIP='128.197.53.112'
-
+  const [canSend, setCanSend] = useState(true);
+  const [viewsend, setviewsend] = useState(true); // State to control the visibility of the send button
+  const serverIP = '128.197.53.112';
 
   const fetchData = async () => {
     try {
       const response = await fetch(`http://${serverIP}:3000/location/${scannedValue}`);
       const data = await response.json();
-      console.log(data);
-      setImageNumber(data.location); // Assuming the response is the image number
+      setImageNumber(data.location);
+      setviewsend(data.location !== 'User is not in any room'); // Update button visibility based on location
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -30,52 +31,44 @@ function CurrentLoc({navigation, route }) {
 
   useEffect(() => {
     fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
   }, [scannedValue]);
-
-  const handleRefresh = () => {
-    fetchData();
-  };
 
   const selectRoom = roomNumber => {
     setSelectedRooms(prevRooms => ({
       ...prevRooms,
-      [roomNumber]: !prevRooms[roomNumber], // Toggle the selection state
+      [roomNumber]: !prevRooms[roomNumber]
     }));
   };
 
   const sendSelectedRooms = async () => {
-    try {
+    if (canSend && viewsend) { // Ensure button is visible and enabled before allowing send
+      setCanSend(false); // Disable button after it's pressed
+      setTimeout(() => setCanSend(true), 3000);
+      try {
         const selectedRoomsArray = Object.keys(selectedRooms).filter(room => selectedRooms[room]);
-        const userID = scannedValue; // Assuming scannedValue is the userID. Replace as needed.
-        console.log('Sending rooms:', selectedRoomsArray);
-
+        const userID = scannedValue;
         const response = await fetch(`http://${serverIP}:3000/tsp-path`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userID, nodes: selectedRoomsArray }),
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userID, nodes: selectedRoomsArray }),
         });
-
-        // Handle the response here
         const responseData = await response.json();
-        console.log('Server response:', responseData);
         navigation.navigate('RFIDScreen', { userID: scannedValue, pathData: responseData.path });
-    } catch (error) {
+      } catch (error) {
         console.error('Error sending data:', error);
+      }
     }
-    
-};
-
+  };
 
   return (
     <View style={styles.container}>
-      {imageNumber && images[imageNumber]
-        ? <Image source={images[imageNumber]} style={styles.logo} />
-        : <Text>Loading or no image available...</Text>
-      }
+      <Image source={images[imageNumber] || images['6']} style={styles.logo} />
       <View style={styles.roomButtonsContainer}>
-        {['1', '2', '3', '4','5'].map(room => (
+        {['1', '2', '3', '4', '5'].map(room => (
           <TouchableOpacity
             key={room}
             style={selectedRooms[room] ? styles.selectedRoomButton : styles.roomButton}
@@ -85,12 +78,15 @@ function CurrentLoc({navigation, route }) {
           </TouchableOpacity>
         ))}
       </View>
-      <TouchableOpacity style={styles.sendButton} onPress={sendSelectedRooms}>
-        <Text style={styles.buttonText}>Send</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
-        <Text style={styles.buttonText}>Refresh</Text>
-      </TouchableOpacity>
+      {viewsend ? (
+        <TouchableOpacity style={styles.sendButton} onPress={sendSelectedRooms}>
+          <Text style={styles.buttonText}>Send</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.errorButton}>
+          <Text style={styles.buttonText}>Location Inaccurate: Please move around to refresh location</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -103,8 +99,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: {
-    width: Dimensions.get('window').width/1.5,
-    height: Dimensions.get('window').height/2,
+    width: Dimensions.get('window').width / 1.5,
+    height: Dimensions.get('window').height / 2,
     resizeMode: 'contain',
   },
   roomButtonsContainer: {
@@ -120,7 +116,7 @@ const styles = StyleSheet.create({
     margin: 5,
   },
   selectedRoomButton: {
-    backgroundColor: '#4CAF50', // Different color for selected rooms
+    backgroundColor: '#4CAF50',
     padding: 10,
     borderRadius: 5,
     margin: 5,
@@ -130,21 +126,23 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     position: 'absolute',
-    bottom: 100,
-    alignSelf: 'center',
-  },
-  refreshButton: {
-    backgroundColor: '#ffffff',
-    padding: 10,
-    borderRadius: 5,
-    position: 'absolute',
-    bottom: 50,
+    bottom: Dimensions.get('window').height / 9,
     alignSelf: 'center',
   },
   buttonText: {
     color: 'black',
     fontSize: 18,
     fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  errorButton: {
+    backgroundColor: '#FF6347',
+    padding: 15,
+    borderRadius: 20,
+    width: '75%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '5%',
   },
 });
 

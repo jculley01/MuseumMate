@@ -29,7 +29,7 @@ export default function BarcodeScanner() {
 
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
-    setScannedData({ type, data });
+    setScannedData({ type, data: data.trim() });
   };
 
   const handleConfirm = () => {
