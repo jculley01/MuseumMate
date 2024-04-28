@@ -37,7 +37,7 @@ Ensure you have the [ESP-IDF environment set up](https://docs.espressif.com/proj
 ### Configure and Install User Device
 
 1. Navigate to the `/ESP_UD` directory.
-2. Replace `/ESP_UD/main/ca.pem` and `/ESP_UD/main/server.pem` with your institution's certificates if not on BU campus.
+2. Replace `/main/ca.pem` and `/main/server.pem` with your institution's certificates if not on BU campus.
 3. Run `idf.py build` to compile the firmware if it's the first build.
 4. Execute `idf.py menuconfig` to open the project configuration menu. Adjust settings as needed.
 5. Rebuild and flash the firmware with `idf.py build flash monitor -p $PORT$`.
