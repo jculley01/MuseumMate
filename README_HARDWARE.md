@@ -28,7 +28,7 @@ The PCB layout provides detailed information on the arrangement of components on
 ![image](/media/pcbdesign.PNG) 
 - [Editable PCB Design File (KiCAD)](/hardware/PCB_KiCAD/UWB_PCB/UWB_PCB.kicad_pcb)
 
-**Note**: Ensure that you have the necessary software to open CAD/CAM and PCB design files, such as KiCAD or another compatible viewer.
+**Note**: Ensure that you have the necessary software to open CAD and PCB design files, such as KiCAD or another compatible viewer.
 
 This section aims to provide the necessary technical documentation for the electronics design community involved with the MuseumMate project, particularly focusing on the TourTag device. It enables engineers and technicians to access, review, and potentially modify the electronic design to suit their specific needs or to develop additional functionalities.
 
