@@ -13,9 +13,9 @@ The schematic diagram offers a detailed visual representation of the electrical 
 - **TourTag Device Schematic**: Shows the circuit design for the TourTag device, detailing all integrated circuits, their connections, and header pins used for modular component attachment.
 
 **Link to TourTag Device Schematic**:
-- [TourTag Device Schematic (PDF)](#)
-![image](/media/BlockDiagram.png) change this image
-- [Source CAD/CAM Files](#)
+- [TourTag Device Schematic (PDF)](/media/pcbschematic.pdf)
+![image](/media/pcbschematic.png)
+- [Source Files (CAD)](/hardware/PCB_KiCAD/UWB_PCB/UWB_PCB.kicad_sch)
 
 ### PCB Layout
 
@@ -24,13 +24,11 @@ The PCB layout provides detailed information on the arrangement of components on
 - **TourTag Devices PCB**: Detailed layout showing the placement of components, traces, vias, and header connectors on the TourTag PCB. This layout aids in understanding how various modules and accessories can be attached and configured.
 
 **Link to TourTag Devices PCB Layout**:
-- [TourTag Devices PCB Layout (PDF)](#)
-![image](/media/BlockDiagram.png) change this image
-- [Editable PCB Design File (e.g., Altium, Eagle)](#)
+- [TourTag Devices PCB Layout (PDF)](/media/pcbdesign.pdf)
+![image](/media/pcbdesign.PNG) 
+- [Editable PCB Design File (KiCAD)](/hardware/PCB_KiCAD/UWB_PCB/UWB_PCB.kicad_pcb)
 
-**Note**: Ensure that you have the necessary software to open CAD/CAM and PCB design files, such as Altium Designer, Eagle, or a compatible viewer.
-
-[Include links to files or embed images of the diagrams here]
+**Note**: Ensure that you have the necessary software to open CAD/CAM and PCB design files, such as KiCAD or another compatible viewer.
 
 This section aims to provide the necessary technical documentation for the electronics design community involved with the MuseumMate project, particularly focusing on the TourTag device. It enables engineers and technicians to access, review, and potentially modify the electronic design to suit their specific needs or to develop additional functionalities.
 
@@ -38,7 +36,7 @@ This section aims to provide the necessary technical documentation for the elect
 
 This section presents a detailed Bill of Materials (BOM) for the MuseumMate hardware. Each component listed includes direct links to vendors, clearly displayed pricing, and the unit costs for efficient sourcing and budgeting.
 
-### User Device
+### User Device (TourTag)
 
 | Component | Price | Units | Unit Cost |
 |-----------|-------|-------|-----------|
@@ -47,6 +45,7 @@ This section presents a detailed Bill of Materials (BOM) for the MuseumMate hard
 | [USB LiIon/LiPoly charger](https://www.adafruit.com/product/259) | $12.50 | 1 | $12.50 |
 | [Mini B USB Cable](https://www.digikey.com/en/products/detail/qualtek/3021003-03/1531289) | $27.05 | 10 | $2.71 |
 | [LiIon Polymer Battery 3.7V 420mAh](https://www.adafruit.com/product/4236) | $6.95 | 1 | $6.95 |
+| [RS-06K103JT 10K Ohm Resistor](https://jlcpcb.com/) | $0.0420 | 20 | $0.840 |
 | [PCB Board](https://jlcpcb.com/) | $27.00 | 10 | $2.70 |
 | [Enclosure](http://www.bu.edu/epic/3d) | $3.50 | 7 | $0.50 |
 | **Total User Device Unit Cost:** | | | **$70.82** |
@@ -142,9 +141,4 @@ This subsection focuses on the overall assembly of the entire system, providing 
 - **Operational Setup**: Photos of the system in its operational environment, illustrating how it interfaces with other systems or modules.
 - **Interaction Points**: Images highlighting user interaction points such as power switches, USB ports, or other control interfaces.
 
-![image](/media/BlockDiagram.png) change this image
-
-
-[Insert images or links to images here]
-
-These photographs should be used alongside the detailed technical diagrams and schematics provided in other sections of the documentation for a comprehensive understanding of the MuseumMate hardware system.
+![image](/media/tourtag.jpg)
