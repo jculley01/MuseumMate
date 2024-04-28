@@ -45,7 +45,7 @@ The TourTag enclosure encloses the PCB, the RFID, the ultra-wideband ESP, the ba
 - **Manufacturing and Assembly**: There were two materials that were taken into consideration when making the enclosure. The main two factors in deciding on a material were weight and cost. First off, the enclosure had to be light because it was going to be put on the back of the phone. If the enclosure was too heavy, the enclosure would fall off the phone making the user experience bad. Secondly, the enclosure has to be inexpensive. This is because the museum has to make as many enclosures as there are users in a museum. If the enclosure were expensive it would cost the museum a lot of money making them not want to use MuseumMate. The two materials considered were PLA and ABS. After weighing the pros and cons of each material like how brittle the material is and the heat tolerance, we went with PLA because it is not as brittle as ABS and if the public is using the enclosures, we want the enclosures to hold up to wear and tear. To manufacture the enclosures, we 3D printed them. This is because they are easy to manufacture yet strong.
 
 **Links to TourTag Enclosure Design**:
-- [TourTag Enclosure Design (Onshape)](#[link_to_tourtag_onshape_file](https://cad.onshape.com/documents/7aaab9504794f084db368c22/w/5395925245216489e8e7f16a/e/d80cc8f357e229253dcfb44c))
+- [TourTag Enclosure Design (Onshape)](#[[link_to_tourtag_onshape_file](https://cad.onshape.com/documents/7aaab9504794f084db368c22/w/5395925245216489e8e7f16a/e/d80cc8f357e229253dcfb44c)])
 
 ### Beacon Enclosure
 
@@ -57,7 +57,7 @@ Similarly, the enclosure for the Beacon ensures it is safeguarded against enviro
 - **Manufacturing and Assembly**:Like the TourTag enclosure, there were two materials that were taken into consideration when making the enclosure. The main two factors in deciding on a material were weight and cost. We decided that ABS was the right material for this because it can handle more heat just in case the UWB gets warm. .
 
 **Links to Beacon Enclosure Design**:
-- [Beacon Enclosure Design (Onshape)](#[link_to_beacon_onshape_file](https://cad.onshape.com/documents/9a545c80bb0287f4124073f7/w/fd1997773b928c532072d26f/e/a766d1128aeb9f154a371a63))
+- [Beacon Enclosure Design (Onshape)](#[[link_to_beacon_onshape_file](https://cad.onshape.com/documents/9a545c80bb0287f4124073f7/w/fd1997773b928c532072d26f/e/a766d1128aeb9f154a371a63)])
 
 **Note**: Ensure you have the necessary software to view and edit the design files, such as Onshape or other CAD software.
 
