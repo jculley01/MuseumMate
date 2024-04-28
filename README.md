@@ -51,9 +51,27 @@ InfluxDB, a specialized time series database, plays a crucial role in managing a
 
 ## Quick Start Guide
 
+### Prerequisites
+
+- Node.js
+- InfluxDB
+- Minio (for object storage)
+- WebSocket capable clients
+
 ### Hardware
 
 ### Node.js Server
+
+Clone the repository to your local machine, download dependencies, and run on port 3000:
+
+```bash
+git clone https://github.com/jculley01/MuseumMate.git
+cd MuseumMate
+cd code
+cd server
+npm install
+node index.js
+```
 
 ### Mobile Application
 
