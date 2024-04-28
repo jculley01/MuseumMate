@@ -25,5 +25,12 @@ cd my-app
 
 The Readme for the mobile application is located at /code/front-end/my-app/README.md
 
+## ChatGPT Server
+
+```bash
+cd code
+cd GPT
+```
+The Readme for the GPT server is located at /code/GPT/README.md
 
 All of the information on these services can be found in their respective README files. 
