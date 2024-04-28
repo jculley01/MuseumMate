@@ -47,7 +47,7 @@ In the museum, each piece of artwork or exhibit is equipped with a unique RFID t
 
 InfluxDB, a specialized time series database, plays a crucial role in managing and storing all system metrics gathered from the hardware and the analytics data displayed on the dashboard. Each TourTag device communicates with the server via UDP, transmitting key information such as connection status, battery status, and battery level. The server processes and stores these metrics in InfluxDB. Additionally, the server captures and logs visitor data for dashboard insights, including room occupancy and duration of stay. These metrics are derived from internal server processes and subsequently stored in InfluxDB. Another important metric, exhibit ratings, is also stored in InfluxDB. Visitors can rate exhibits by scanning an RFID tag with their TourTag and submitting a 0-5 star review through a REST API endpoint, which the server then records in the database. This comprehensive data collection and storage system enables real-time monitoring and analytics to enhance visitor experience and operational efficiency.
 
-![image](https://github.com/jculley01/MuseumMate/assets/113144839/2dba16a7-c842-4802-b65b-12b0bc44c731)
+![image](/media/BlockDiagram.png)
 
 
 ## System and Visitor Metrics in InfluxDB
