@@ -49,6 +49,17 @@ InfluxDB, a specialized time series database, plays a crucial role in managing a
 
 ![image](/media/BlockDiagram.png)
 
+## Quick Start Guide
+
+### Hardware
+
+### Node.js Server
+
+### Mobile Application
+
+### ChatGPT Server
+
+### Administrator Dashboard
 
 ## System and Visitor Metrics in InfluxDB
 
