@@ -1,7 +1,52 @@
-# Summary
-This code defines a React component named `App` that renders a stack navigator with multiple screens. Each screen has a title, a background color, and a text color for the header. The component is exported as the default export of the module.
+# Museum Mate Mobile App
 
+## Project Overview
+
+Museum Mate is an interactive mobile application designed for museum visitors. It enhances the visitor experience by providing RFID-based information retrieval, custom tour guidance, barcode scanning for entry, and navigation aids. The app is built using the Expo framework, which allows for rapid development and easy updates across Android and iOS devices.
+
+## Development/Build Tools
+
+- **Expo SDK 50.0.17**: A framework and platform for universal React applications.
+- **React Native 0.73.6**: A framework for building native apps with React.
+- **Node.js**: Ensure you have Node.js installed to use npm for managing dependencies.
+- **Other Key Libraries**:
+  - `@react-navigation/native` and `@react-navigation/stack` for navigation.
+  - `expo-camera`, `expo-barcode-scanner`, and `expo-speech` for multimedia and interaction.
+  - `axios` for API requests.
+
+## Installation
+
+### Prerequisites
+
+- **Node.js**: [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
+
+### Setup
+
+1. **Clone the repository**:
+   ```bash
+   git clone (https://github.com/jculley01/MuseumMate)
+   cd code
+   cd front-end
+   ```
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Start Development Server**
+```bash
+npx expo start
+```
+4. **Build Packages**
+```bash
+eas configure
+eas build --platform ios
+eas build -p android --profile preview
+```
+
+# Module Overviews
 ## App.js:
+### Summary
+This code defines a React component named `App` that renders a stack navigator with multiple screens. Each screen has a title, a background color, and a text color for the header. The component is exported as the default export of the module.
 
 ### Example Usage and Analysis
 ```javascript
