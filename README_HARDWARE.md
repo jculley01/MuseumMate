@@ -125,24 +125,34 @@ These specifications ensure that both the Beacon and User Device operate efficie
 
 ## System Assembly and Photographic Documentation
 
-This section provides detailed visual documentation of the MuseumMate hardware, which is essential for understanding the assembly and layout of the system. The documentation is divided into two parts to cover both the internal setup within the enclosure and the entire assembled system.
+This section provides detailed visual documentation of the MuseumMate hardware, essential for understanding the assembly and layout of the system. The photographs cover both the internal setup within the enclosures and the fully assembled system in operational use.
 
 ### Clear Picture of System Inside the Enclosure
 
-This subsection provides clear images from multiple angles of the internal components and setup within the system’s enclosure. These photographs are crucial for visualizing the arrangement and integration of components, which is beneficial for assembly, maintenance, and troubleshooting.
+This subsection includes images from various angles showing the internal components and setups within the system's enclosures. These photographs are crucial for visualizing how the components are arranged and integrated, which aids in assembly, maintenance, and troubleshooting.
 
-- **Top View**: Shows how the components are arranged within the enclosure, highlighting space utilization and component layout.
-- **Side Views**: Display the connections and mounting from the sides, showing component depth and attachment points.
-- **Close-up Views**: Detailed views of specific areas like wiring, connectors, and mounting of modules like the UWB DW3000 and RFID readers.
+![enclosure overview](/media/enclosure_overview.jpg)
+
+#### Beacon in Enclosure
+Photos depict the Beacon within its enclosure, providing a comprehensive view of its internal configuration and how components are mounted and connected.
+
+![Beacon in Enclosure](/path/to/beacon_enclosure_images.jpg)
+
+#### TourTag in Enclosure
+Images show the TourTag within its enclosure, detailing its component layout and connectivity. These visuals help in understanding the device's internal structure.
+
+![TourTag in Enclosure](/path/to/tourtag_enclosure_images.jpg)
 
 ### Photographs Documenting the Assembled Entire System
 
-This subsection focuses on the overall assembly of the entire system, providing a broader perspective that includes external interfaces and operational setup.
+This subsection showcases the entire system once fully assembled and in operational use, offering a broader perspective on how the devices interact with their environment and users.
 
-- **Full System View**: An image showing the complete system assembled and ready for use, providing an overall perspective.
-- **Operational Setup**: Photos of the system in its operational environment, illustrating how it interfaces with other systems or modules.
-- **Interaction Points**: Images highlighting user interaction points such as power switches, USB ports, or other control interfaces.
+#### Beacon Installed and Operational
+Images of the Beacon installed and in use, illustrating its functional setup in the actual deployment environment.
 
-![image](/media/tourtag.jpg)
-![Untitled Notebook-2](https://github.com/jculley01/MuseumMate/assets/91488781/ee2e9823-f0da-464d-a1ec-1cac43cd7757)
+![Beacon Operational](/path/to/beacon_operational_images.jpg)
 
+#### TourTag in Use
+Photos of the TourTag in use, attached to a smartphone via MagSafe and being handled by a user, demonstrating its practical application and user interface.
+
+![TourTag in Use](/media/tourtag_in_use.jpg)
