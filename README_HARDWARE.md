@@ -144,3 +144,5 @@ This subsection focuses on the overall assembly of the entire system, providing 
 - **Interaction Points**: Images highlighting user interaction points such as power switches, USB ports, or other control interfaces.
 
 ![image](/media/tourtag.jpg)
+![Untitled Notebook-2](https://github.com/jculley01/MuseumMate/assets/91488781/ee2e9823-f0da-464d-a1ec-1cac43cd7757)
+
