@@ -53,12 +53,40 @@ InfluxDB, a specialized time series database, plays a crucial role in managing a
 
 ### Prerequisites
 
-- Node.js
+- Node.js (v12.x or higher)
+- npm (v6.x or higher)
 - InfluxDB
 - Minio (for object storage)
-- WebSocket capable clients
+- Latest version of GoLang
+- Gin Framework
+- OpenAI Key
+- Arduino IDE
+- [ESP32 UWB DW3000](https://www.makerfabs.com/esp32-uwb-dw3000.html)
+- RC522 RFID reader module
+- [USB LiIon/LiPoly charger - v1.2](https://www.adafruit.com/product/259)
+- LiIon Battery
+- Eduroam network certification
 
 ### Hardware
+1. Ensure you have the [Arduino environment set up](https://support.arduino.cc/hc/en-us/articles/360019833020-Download-and-install-Arduino-IDE) for ESP32 development.
+2. [Install](https://docs.arduino.cc/software/ide-v1/tutorials/installing-libraries/) the dw3000 library to your Arduino environment.
+
+#### Configure and Install MuseumMate Beacon
+
+1. Connect your ESP32 UWB DW3000 to your computer.
+2. Navigate to the `/MuseumMate_Beacon` directory.
+3. Open `MuseumMate_Beacon.ino` in the IDE.
+4. Modify `BEACON_ID` in line 36 to the correct value.
+5. Adjust bytes 7 to 10 in `tx_resp_msg` in line 38 to match the `BEACON_ID`.
+6. Build and flash the firmware to the ESP32 UWB DW3000 board and monitor the output.
+
+#### Configure and Install MuseumMate TourTag
+
+1. Navigate to the `/MuseumMate_TourTag` directory.
+2. Open `common_definition.h` and modify `USERID` on line 5 to the correct value.
+3. In `MuseumMateWifi.h`, update `SSID`, `EAP_ANONYMOUS_IDENTITY`, `EAP_IDENTITY`, `EAP_PASSWORD`, `EAP_USERNAME`, and `HOST` (server IP address) as necessary from lines 11 to 20.
+4. In `MuseumMateWifi.cpp`, replace `test_root_ca` on line 11 with your institution's certificates if not on BU campus.
+5. Build and flash `MuseumMate_TourTag.ino` to your ESP32 UWB DW3000 board, then monitor the serial output to confirm the firmware is running correctly.
 
 ### Node.js Server
 
@@ -75,9 +103,56 @@ node index.js
 
 ### Mobile Application
 
+1. **Clone the repository**:
+   ```bash
+   git clone (https://github.com/jculley01/MuseumMate)
+   cd code
+   cd front-end
+   ```
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Start Development Server**
+```bash
+npx expo start
+```
+4. **Build Packages**
+```bash
+eas configure
+eas build --platform ios
+eas build -p android --profile preview
+```
+
 ### ChatGPT Server
 
+```bash
+git clone https://github.com/jculley01/MuseumMate.git
+cd MuseumMate
+cd code
+cd GPT
+go mod tidy
+go run main.go
+```
+
 ### Administrator Dashboard
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/jculley01/MuseumMate.git
+   cd code
+   cd dashboard
+   cd my-app
+   ```
+2. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+3. **Start the Application:**
+   ```bash
+   npm start
+   ```
+
+This will run the code in development mode. Open http://localhost:3001 to view in browser.
 
 ## System and Visitor Metrics in InfluxDB
 
