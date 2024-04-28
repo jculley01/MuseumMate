@@ -33,9 +33,9 @@ static dwt_config_t config = {
     DWT_PDOA_M0       /* PDOA mode off */
 };
 
-#define BEACON_ID "0005"
+#define BEACON_ID "0001"
 static uint8_t rx_poll_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 0xE0, 'M', 'A', 'T', 'E', 0, 0};
-static uint8_t tx_resp_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 0xE1, '0', '0', '0', '5', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static uint8_t tx_resp_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 0xE1, '0', '0', '0', '1', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Make sure bit 7 to 10 is same as BEACON_ID
 static uint8_t frame_seq_nb = 0;
 static uint8_t rx_buffer[20];
 static uint32_t status_reg = 0;
