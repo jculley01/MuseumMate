@@ -62,6 +62,8 @@ Similarly, the enclosure for the Beacon ensures it is safeguarded against enviro
 **Note**: Ensure you have the necessary software to view and edit the design files, such as Onshape or other CAD software.
 
 This README provides detailed information about the PCB and enclosures, supporting the project's requirements for durability, functionality, and ease of integration within the MuseumMate system.
+
+
 <img width="323" alt="Screen Shot 2024-04-28 at 8 28 43 AM" src="https://github.com/jculley01/MuseumMate/assets/91488781/81752479-b0e6-49b4-9777-bfb5fa4ea413">
 <img width="314" alt="Screen Shot 2024-04-28 at 8 28 19 AM" src="https://github.com/jculley01/MuseumMate/assets/91488781/de260560-c768-49fa-a7e2-2ab83af7b597">
 
