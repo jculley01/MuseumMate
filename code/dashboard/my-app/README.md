@@ -1,70 +1,97 @@
-# Getting Started with Create React App
+# Administrator Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The MuseumMate Dashboard is a React-based application designed to provide real-time insights into museum operations, including visitor tracking, exhibit interactions, and room capacities. This document outlines the setup, features, and API interactions of the dashboard.
 
-## Available Scripts
+## Getting Started
 
-In the project directory, you can run:
+### Prerequisites
+- Node.js (v12.x or higher)
+- npm (v6.x or higher)
+- Access to server APIs
 
-### `npm start`
+### Installation
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/jculley01/MuseumMate.git
+   cd code
+   cd dashboard
+   cd my-app
+   ```
+2. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+3. **Start the Application:**
+   ```bash
+   npm start
+   ```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+This will run the code in development mode. Open http://localhost:3001 to view in browser.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Application Structure
 
-### `npm test`
+The dashboard is structured into several main components, each responsible for a different aspect of the museum's operations:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- ExhibitOverview: Displays active users and total visitors today.
+- VisitorFeedLink: Links to visitor feedback and interactions.
+- RoomCapacityChart: Shows current room capacities and historical data.
+- Sidebar: Navigation for accessing different sections of the dashboard.
+- PopularExhibits: Lists the most interacted with exhibits.
+- RoomOverview: Detailed view for each room, including visitor counts and stay duration.
 
-### `npm run build`
+## API Endpoints
+The dashboard interacts with several endpoints from the server which can be found in /code/server. 
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Active Users
+- **Endpoint**: `GET /api/active-users`
+- **Description**: Returns the number of currently active users.
+- **Response Example**:
+  ```json
+  { "activeUsers": 53 }
+  ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Total Users
+- **Endpoint**: `GET /api/total-users`
+- **Description**: Provides the total number of users within the last 24 hours.
+- **Response Example**:
+  ```json
+  { "totalUsers": 53 }
+  ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Room Occupancies
+- **Endpoint**: `GET /api/room-occupancies`
+- **Description**: Fetches the current occupancy of each room.
+- **Response Example**:
+  ```json
+    [
+        { "roomID": "1", "occupancy": 30 },
+        { "roomID": "2", "occupancy": 20 }
+    ]
+  ```
 
-### `npm run eject`
+### Exhibit Ratings
+- **Endpoint**: `GET /api/exhibit-ratings`
+- **Description**: Retrieves ratings for each exhibit from the last year.
+- **Response Example**:
+  ```json
+    [
+        { "exhibit": "The Age of Dinosaurs", "rating": 4.5, "time": "2023-09-01T12:00:00Z" }
+    ]
+  ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Room Stats
+- **Endpoint**: `GET /api/room-stats/:timePeriod`
+- **Description**: Provides statistics for room visits and durations based on the specified time period.
+- **Response Example**:
+  ```json
+    [
+        { "roomName": "Main Hall", "totalVisits": 150, "averageDuration": 35 }
+    ]
+  ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Development
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+To add a new component:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Create a new component: Place it under `src/components`
+- Integrate the component: Import and use it in `App.js` or other components as needed. 
