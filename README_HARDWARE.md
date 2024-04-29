@@ -136,12 +136,14 @@ This subsection includes images from various angles showing the internal compone
 #### Beacon in Enclosure
 Photos depict the Beacon within its enclosure, providing a comprehensive view of its internal configuration and how components are mounted and connected.
 
-![Beacon in Enclosure](/path/to/beacon_enclosure_images.jpg)
+![image](/media/beacon_in_enclosure.png)
 
 #### TourTag in Enclosure
 Images show the TourTag within its enclosure, detailing its component layout and connectivity. These visuals help in understanding the device's internal structure.
 
-![TourTag in Enclosure](/path/to/tourtag_enclosure_images.jpg)
+![image](/media/tourtag_in_enclosure.jpg)
+
+[TourTag in Enclosure (PDF)](/media/tourtag.pdf): This document contains photographs taken from various angles, providing a comprehensive view of how the TourTag is assembled within its enclosure. It serves as an essential visual reference for understanding the physical layout and connection details of the TourTag components.
 
 ### Photographs Documenting the Assembled Entire System
 
@@ -155,4 +157,4 @@ Images of the Beacon installed and in use, illustrating its functional setup in 
 #### TourTag in Use
 Photos of the TourTag in use, attached to a smartphone via MagSafe and being handled by a user, demonstrating its practical application and user interface.
 
-![TourTag in Use](/media/tourtag_in_use.jpg)
+![image](/media/tourtag_in_use.jpg)
