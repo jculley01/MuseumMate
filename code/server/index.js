@@ -23,6 +23,7 @@ const messageWss = new WebSocket.Server({ port: 6060 });
 const Minio = require('minio');
 const dynamicPollPort = 3335;
 const { performance } = require('perf_hooks');
+const rateLimit = require('express-rate-limit');
 
 const signalMap = new SignalMap();
 const token = 'i8U3kPdqsPn-3SSuWsrydl9N8MeRy59JLJi-AcWJWYNzsO-jJQbrRnUK9at0snR31jHngUcXc7Dc_T1q6Q-mvg=='
@@ -55,6 +56,12 @@ try {
     console.log('Starting with new counters.');
 }
 
+const limiter = rateLimit({
+    windowMs: 15 * 1000, // 30 seconds
+    max: 10, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+
 const uwbDevices = {
     "1": { x: 2.2, y: 3.2 },
     "2": { x: 7, y: 3.2},
@@ -73,21 +80,13 @@ const uwbDevices = {
 };
 
 const rooms = {
-    "1": { id:'1',x1: 12.4, y1: 18.2, x2: 20.9, y2: 26.4, maxOccupancy:30},
-    "2": { id:'2',x1: 0.001, y1: 16.2, x2: 12.4, y2: 18.2, maxOccupancy:30},
-    "3": { id:'3',x1: 0.0001, y1: 6.8, x2: 6.5, y2: 16.2 , maxOccupancy:30},
-    "4": { id:'4',x1: 0.00001, y1: 0.000001, x2: 20, y2: 6.8 , maxOccupancy:30},
-    "5": { id:'5',x1: 12.4, y1: 6.3, x2: 20, y2: 18.2, maxOccupancy:30 },
+    "1": { id:'1',x1: 11, y1: 18.2, x2: 23, y2: 28, maxOccupancy:30},
+    "2": { id:'2',x1: -2, y1: 16.2, x2: 12.4, y2: 20, maxOccupancy:30},
+    "3": { id:'3',x1: -2, y1: 6.8, x2: 8, y2: 16.2 , maxOccupancy:30},
+    "4": { id:'4',x1: -2, y1: 0, x2: 22, y2: 6.8 , maxOccupancy:30},
+    "5": { id:'5',x1: 12.4, y1: 6.3, x2: 22, y2: 18.2, maxOccupancy:30 },
 };
 
-const RFIDs = {
-    "360684124195": "1",
-    "1060675152451": "2",
-    "919031897443": "3",
-    "1065112304211": "4",
-    "184628849091": "5",
-    "1026457053987": "6"
-};
 
 
 let userDeviceMap = {};
@@ -95,10 +94,10 @@ let userLastRoom = {};
 
 const preSetGraph = {
     '1': { '2': 5, '5': 5 },
-    '2': { '3': 5 , '1': 5},
+    '2': { '3': 5 , '1': 5, '5': 5},
     '3': { '2': 5 , '4': 5},
     '4': { '3': 5 , '5': 5},
-    '5': { '4': 5 , '1': 5},
+    '5': { '4': 5 , '1': 5, '2': 5},
 };
 
 
@@ -325,6 +324,21 @@ rfidServer.on('listening', () => {
 
 //-------------------------------------------------------------------------------------------------------------------------------
 //interval processes
+
+setInterval(() => {
+    // Iterate over each userID in SignalMap
+    Object.keys(signalMap.userBeaconMap).forEach(async userID => {
+        // Fetch the latest connection status for the user
+        const status = await getConnectionStatus(userID);
+
+        // If the status is 0, clear the values for that userID
+        if (status === 0) {
+            clearUserData(userID);
+            console.log(`Cleared data for userID ${userID} as the device is off.`);
+        }
+    });
+}, 10000); 
+
 
 console.log(trainingData.length);
 const intervalId = setInterval(() => {
@@ -583,9 +597,7 @@ app.get('/api/total-users', async (req, res) => {
 
     try {
         const result = await queryApi.collectRows(query);
-        console.log("Result: ", result);
         const totalUsers = result.length;
-        console.log("Total users: ", totalUsers);
         res.json({ totalUsers });
     } catch (error) {
         console.error(`Failed to query InfluxDB: ${error}`);
@@ -686,12 +698,9 @@ app.get('/api/room-stats/:timePeriod', async (req, res) => {
         const durations = await queryApi.collectRows(queryDuration);
         const accesses = await queryApi.collectRows(queryAccess);
 
-        console.log("Durations: ", durations);
-        console.log("Accesses: ", accesses);
 
         const durationMap = new Map(durations.map(item => [item.roomName || 'Unknown', item._value]));
         const accessMap = new Map(accesses.map(item => [item.roomID || 'Unknown', item._value]));
-        console.log("accessMap: ",accessMap);
         // Combining results
         const combinedResults = [...durationMap.keys()].map(roomName => ({
             roomName: roomName,
@@ -731,6 +740,35 @@ app.get('/api/occupancy-trends', async (req, res) => {
     }
 });
 
+app.get('/api/connection-status/:userID', async (req, res) => {
+    const { userID } = req.params; // Extract userID from URL parameters
+
+    const query = flux`
+        from(bucket: "dashboard")
+        |> range(start: -30d) // Look back over the last 30 days; adjust as needed
+        |> filter(fn: (r) => r["_measurement"] == "connectionStatus" and r["userID"] == "${userID}")
+        |> last() // Retrieves the most recent status for the specified userID
+    `;
+
+    try {
+        const result = await queryApi.collectRows(query);
+        if (result.length > 0) {
+            const connectionStatus = result[0]; // Assuming there is at least one result
+            console.log("Connection Status for userID", userID, ":", connectionStatus);
+            res.json({
+                userID: userID,
+                status: connectionStatus._value, // Assuming the status is stored in the `_value` field
+                timestamp: connectionStatus._time // Include timestamp if relevant
+            });
+        } else {
+            res.status(404).json({ message: "No connection status found for the specified userID." });
+        }
+    } catch (error) {
+        console.error(`Failed to query InfluxDB for connection status of userID ${userID}: ${error}`);
+        res.status(500).json({ message: "Failed to retrieve connection status." });
+    }
+});
+
 
 //-----------------------------------------------
 //middle ware
@@ -751,9 +789,36 @@ app.use('/rfid/:bucketName', (req, res, next) => {
 
 //app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-
+app.use(limiter);
 //------------------------------------------------------------------------------------------------------------------
 //functions
+
+async function getConnectionStatus(userID) {
+    const query = flux`
+        from(bucket: "dashboard")
+        |> range(start: -1h)  // Looking back 1 hour
+        |> filter(fn: (r) => r._measurement == "connectionStatus" && r.userID == "${userID}")
+        |> last()  // Get the most recent status
+    `;
+
+    try {
+        const result = await queryApi.collectRows(query);
+        if (result.length > 0) {
+            return result[0]._value;  // Assuming '_value' holds the status as 1 or 0
+        }
+        return null;  // No status found
+    } catch (error) {
+        console.error(`Failed to query connection status for userID ${userID}: ${error}`);
+        return null;  // In case of query failure
+    }
+}
+
+function clearUserData(userID) {
+    if (signalMap.userBeaconMap[userID]) {
+        delete signalMap.userBeaconMap[userID];  // Assuming userBeaconMap stores user data
+    }
+}
+
 
 const measureTrilaterationTime = (signalMap, userID, uwbDevices, rooms) => {
     const start = performance.now();
@@ -783,7 +848,7 @@ function updateRoomOccupancy() {
     roomOccupancyCounts = roomCounts;
     // Print the room occupancy counts
     Object.entries(roomCounts).forEach(([roomName, count]) => {
-        console.log(`Room: ${roomName}, Occupancy: ${count}`);
+        
     });
 
     // Write the room occupancy counts to InfluxDB
