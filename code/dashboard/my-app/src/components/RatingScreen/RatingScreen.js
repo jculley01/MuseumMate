@@ -75,20 +75,24 @@ const RatingStars = ({ rating }) => {
     const [exhibitsData, setExhibitsData] = useState([]);
     const [filterRating, setFilterRating] = useState(0);
     const [filteredExhibits, setFilteredExhibits] = useState([]);
-
+    
     useEffect(() => {
-        const loadData = async () => {
-            try {
-                const data = await fetchExhibitRatings();
-                setExhibitsData(data);
-                setFilteredExhibits(data);
-            } catch (error) {
-                console.error("Error loading data:", error);
-                // Optionally set error state and display error messages here
-            }
-        };
-        loadData();
-    }, []);
+      const loadData = async () => {
+          try {
+              const data = await fetchExhibitRatings();
+              setExhibitsData(data);
+              setFilteredExhibits(data);
+          } catch (error) {
+              console.error("Error loading data:", error);
+              // Optionally set error state and display error messages here
+          }
+      };
+  
+      loadData(); // Load data initially
+      const intervalId = setInterval(loadData, 10000); // Set up the interval to fetch data every 10 seconds
+  
+      return () => clearInterval(intervalId); // Clean up the interval on component unmount
+  }, []);
 
     const handleRateChange = (value) => {
         setFilterRating(value);

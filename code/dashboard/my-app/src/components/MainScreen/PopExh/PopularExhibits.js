@@ -3,34 +3,33 @@ import { Avatar, List, Button,Tag } from 'antd';
 
 const data = [
   {
-    title: 'Exhibit - 3600',
+    title: 'Mona Lisa',
     popularity: 'High',
     avatar: 'https://t1.gstatic.com/licensed-image?q=tbn:ANd9GcQ-FvbbAq5IaJUhtwxXEwY0D-jiZju02ejnNHx_bQWL_27GF3srhwJgqusMAqKh3QqU', // Replace with actual image links
   },
   {
-    title: 'Exhibit - 3600',
+    title: 'Starry Night',
     popularity: 'High',
-    avatar: 'https://t1.gstatic.com/licensed-image?q=tbn:ANd9GcQ-FvbbAq5IaJUhtwxXEwY0D-jiZju02ejnNHx_bQWL_27GF3srhwJgqusMAqKh3QqU',
+    avatar: 'https://lh3.googleusercontent.com/Pd2nCUHUz4Ruc76LRh1-H0Dldl04hWSXw8P9uCYZ4TIWP7yNPArIgWlHZrf1qT9T=s1200',
   },
   {
-    title: 'Exhibit - 3600',
+    title: 'Scream',
     popularity: 'Low',
-    avatar: 'https://t1.gstatic.com/licensed-image?q=tbn:ANd9GcQ-FvbbAq5IaJUhtwxXEwY0D-jiZju02ejnNHx_bQWL_27GF3srhwJgqusMAqKh3QqU',
-  },
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/c/c5/Edvard_Munch%2C_1893%2C_The_Scream%2C_oil%2C_tempera_and_pastel_on_cardboard%2C_91_x_73_cm%2C_National_Gallery_of_Norway.jpg'},
   {
-    title: 'Exhibit - 3600',
+    title: 'Last Supper',
     popularity: 'Low',
-    avatar: 'https://t1.gstatic.com/licensed-image?q=tbn:ANd9GcQ-FvbbAq5IaJUhtwxXEwY0D-jiZju02ejnNHx_bQWL_27GF3srhwJgqusMAqKh3QqU',
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/%C3%9Altima_Cena_-_Da_Vinci_5.jpg',
   },
   {
-    title: 'Exhibit - 3600',
+    title: 'The Kiss',
     popularity: 'High',
-    avatar: 'https://t1.gstatic.com/licensed-image?q=tbn:ANd9GcQ-FvbbAq5IaJUhtwxXEwY0D-jiZju02ejnNHx_bQWL_27GF3srhwJgqusMAqKh3QqU', // Replace with actual image links
-  },
+    avatar: 'https://lh3.googleusercontent.com/7aJyS2Nd7c8oCJKmfXlmM-rnSnLMY0ykfBFOP8N3OjV6M4hbhS_NEg8tH6SJDfvl=s1200'},
+
   {
-    title: 'Exhibit - 3600',
+    title: 'American Gothic',
     popularity: 'High',
-    avatar: 'https://t1.gstatic.com/licensed-image?q=tbn:ANd9GcQ-FvbbAq5IaJUhtwxXEwY0D-jiZju02ejnNHx_bQWL_27GF3srhwJgqusMAqKh3QqU',
+    avatar: 'https://lh3.googleusercontent.com/y-iFOHfLTwkuQSUegpwDdgKmOjRSTvPxat63dQLB25xkTs4lhIbRUFeNBWZzYf370g=s1200',
   },
   {
     title: 'Exhibit - 3600',
