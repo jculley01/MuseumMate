@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {ScrollView, View, Text, Image, StyleSheet, Dimensions, TouchableOpacity,Modal,ActivityIndicator } from 'react-native';
+import {ScrollView, View, Text, Image, StyleSheet, Dimensions, TouchableOpacity,Modal,ActivityIndicator, Platform } from 'react-native';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { Camera } from 'expo-camera';
 import { Picker } from '@react-native-picker/picker';
@@ -15,6 +15,7 @@ import ViewPager from 'react-native-pager-view';
 import { Video, ResizeMode } from 'expo-av';
 import { PageIndicator } from 'react-native-page-indicator';
 import { useIsFocused } from '@react-navigation/native';
+
 
 
 
@@ -72,7 +73,7 @@ const RFIDScreen = ({ route }) => {
     const [isApiResponseVisible, setIsApiResponseVisible] = useState(false);
     const [selectedPrompt, setSelectedPrompt] = useState('');
     const [isPromptPickerVisible, setIsPromptPickerVisible] = useState(false);
-    const promptLabels = ["Artist", "Style", "Visit Stats"];
+    const promptLabels = ["Elementary", "College", "Professional"];
     const serverIP='128.197.53.112'
     const [pageIndex, setPageIndex] = useState(0);
     const isSpeaking = Speech.isSpeakingAsync();
@@ -87,9 +88,15 @@ const RFIDScreen = ({ route }) => {
     const isFocused = useIsFocused();
     const currentRatingRef = useRef(0);
     const video = React.useRef(null);
+    const [key, setKey] = useState(0);
+    const wsRef = useRef(null);
 
 
     const [isPlaying, setIsPlaying] = useState(false);
+
+    const restartCamera = () => {
+        setKey(prevKey => prevKey + 1);
+      };
 
     const handlePlayPause = () => {
       if (isPlaying) {
@@ -179,56 +186,89 @@ const convertToSpeechLanguageCode = (languageCode) => {
 
 //Notifcation endpoint:
 useEffect(() => {
-    const wsUrl = `ws://${serverIP}:6060`;
-    const ws = new WebSocket(wsUrl);
-    ws.onopen = () => {
-        console.log('WebSocket connection Message established');
-    };
-    ws.onmessage = (e) => {
-        const message = JSON.parse(e.data);
-        //console.log('Received message:', message);
-        setWsMessage(message.message);
-        setIsNotificationVisible(true); // Show the notification container
-    };
-    
-    ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
-    ws.onclose = () => {
-        console.log('WebSocket connection closed');
-    };
-    return () => {
-        ws.close();
-    };
-}, []); 
+    // Function to initialize WebSocket
+    const initializeWebSocket = () => {
+        const wsUrl = `ws://${serverIP}:6060`;
+        wsRef.current = new WebSocket(wsUrl);
 
-
-
-
-    useEffect(() => {
-        (async () => {
-            const { status } = await Camera.requestCameraPermissionsAsync();
-            setHasPermission(status === 'granted');
-        })();
-
-        if (route.params?.pathData) {
-            setPath(route.params.pathData);
-        }
-        //fetchObjectData();
-        const ws = new WebSocket(`ws://${serverIP}:8080`);
-        ws.onopen = () => console.log('WebSocket connection established');
-        ws.onmessage = (e) => {
-            const message = JSON.parse(e.data);
-         console.log('rfidws'+message.userID)
-         const formattedUserID = userID.toString().padStart(4, '0');
-           if(message.userID==formattedUserID){
-            setRFIDData(message);
-            fetchObjectData(message.RFID);
-           }
+        wsRef.current.onopen = () => {
+            console.log('WebSocket connection established');
         };
-        ws.onclose = () => console.log('WebSocket connection closed');
-        return () => ws.close();
-    }, [route.params?.pathData]);
+
+        wsRef.current.onmessage = (e) => {
+            const message = JSON.parse(e.data);
+            setWsMessage(message.message);
+            setIsNotificationVisible(true); // Show the notification container
+        };
+
+        wsRef.current.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        wsRef.current.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
+    };
+
+    // Check if screen is focused and WebSocket is not already connected
+    if (isFocused && (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED)) {
+        initializeWebSocket();
+    }
+
+    // Cleanup function to close WebSocket when the component unmounts or loses focus
+    return () => {
+        if (wsRef.current) {
+            wsRef.current.close();
+        }
+    };
+}, [isFocused]);
+
+
+
+
+useEffect(() => {
+    (async () => {
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        setHasPermission(status === 'granted');
+    })();
+
+    // Define a function to initialize the WebSocket
+    const initializeWebSocket = () => {
+        const wsUrl = `ws://${serverIP}:8080`;
+        wsRef.current = new WebSocket(wsUrl);
+
+        wsRef.current.onopen = () => {
+            console.log('WebSocket connection established');
+        };
+
+        wsRef.current.onmessage = (e) => {
+            const message = JSON.parse(e.data);
+            console.log('rfidws' + message.userID)
+            const formattedUserID = userID.toString().padStart(4, '0');
+            if (message.userID === formattedUserID) {
+                setRFIDData(message);
+                fetchObjectData(message.RFID);
+            }
+        };
+
+        wsRef.current.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
+    };
+
+    // Initialize or reinitialize WebSocket based on focus
+    if (isFocused) {
+        initializeWebSocket();
+    }
+
+    // Cleanup function to close WebSocket when component unmounts or loses focus
+    return () => {
+        if (wsRef.current) {
+            wsRef.current.close();
+        }
+    };
+}, [isFocused, route.params?.pathData])
+
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -336,10 +376,12 @@ useEffect(() => {
     
 
     const fetchObjectData = async (RFID) => {
+        setIsLoadingApiResponse(true);  // Start loading
         try {
             const response = await fetch(`http://${serverIP}:3000/rfid/${RFID}`);
             if (!response.ok) {
                 console.error('Server responded with an error:', response.status, response.statusText);
+                setIsLoadingApiResponse(false);  // Stop loading on error
                 return;
             }
     
@@ -348,7 +390,7 @@ useEffect(() => {
                 description: '',
                 media: [],  // Array to hold both images and videos
                 prompts: [],
-                title:''
+                title: ''
             };
     
             // Process each item based on its type
@@ -361,7 +403,7 @@ useEffect(() => {
     
                 if (item.name.includes('desc')) {
                     fetchedData.description = await contentResponse.text();
-                }else if (item.name.includes('img') || item.name.includes('vid')) {
+                } else if (item.name.includes('img') || item.name.includes('vid')) {
                     fetchedData.media.push({
                         type: item.name.includes('img') ? 'image' : 'video',
                         url: item.url
@@ -369,26 +411,25 @@ useEffect(() => {
                 } else if (item.name.includes('prompt')) {
                     const promptsText = await contentResponse.text();
                     fetchedData.prompts = promptsText.split(',');
-                }
-                else if (item.name.includes('title')) {
+                } else if (item.name.includes('title')) {
                     fetchedData.title = await contentResponse.text();
                     setExhibitName(fetchedData.title)
                 }
             }
-            //console.log("Media Array Contents:", fetchedData.description);
             setObjectData([{
                 name: RFID,
                 media: fetchedData.media,
                 description: fetchedData.description,
                 prompts: fetchedData.prompts,
-                title:fetchedData.title
+                title: fetchedData.title
             }]);
-    
         } catch (error) {
             console.error('Error fetching object data:', error);
-        }  
-         
+        } finally {
+            setIsLoadingApiResponse(false);  // Stop loading regardless of outcome
+        }
     };
+    
     
  
 
@@ -446,13 +487,19 @@ useEffect(() => {
     return (
 <View style={styles.container}>
 
-    <Camera style={styles.camera} type={Camera.Constants.Type.back}>
+    <Camera key={key} style={styles.camera} type={Camera.Constants.Type.back} >
     <Modal
     animationType="slide"
     transparent={true}
     visible={showHelpModal}
-    onRequestClose={() => setShowHelpModal(false)} // To handle Android back button
->
+    onRequestClose={() => {
+      setShowHelpModal(false);
+      if (Platform.OS === 'android') {
+        restartCamera(); // Restart camera only on Android
+      }
+    }}
+  >
+
     <View style={styles.centeredView}>
         <View style={styles.startupView}>
             <Image
@@ -463,9 +510,14 @@ useEffect(() => {
                 Welcome to our interactive media display. To interact with the multimedia display tap your TourTag to the RFID tags placed on each table.
             </Text>
             <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setShowHelpModal(false)}
-            >
+          style={styles.closeButton}
+          onPress={() => {
+            setShowHelpModal(false);
+            if (Platform.OS === 'android') {
+              restartCamera(); // Ensure the camera is also restarted when explicitly closing the modal
+            }
+          }}
+        >
                 <Text style={styles.starttextStyle}>X Close</Text>
             </TouchableOpacity>
         </View>
